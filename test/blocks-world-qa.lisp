@@ -12,16 +12,16 @@
 
 ;; 1. Is the Nvidia block to the left of the Texaco block?
 (define-test bwqa-1
-	"Blocks world QA sentence 1."
-	(:tag :blocks-world-qa)
+  "Blocks world QA sentence 1."
+  (:tag :blocks-world-qa)
   (let ((ulf '(((pres be.v) (the.d (|Nvidia| block.n)) 
-							  (to.p (the.d ((adv-a left.a) (of.p (the.d |Texaco| block.n)))))) ?))
+                (to.p (the.d ((adv-a left.a) (of.p (the.d |Texaco| block.n)))))) ?))
         (reduced-ulf 
              '(((pres be.v) (the.d (|Nvidia| block.n))
                 (to_the_left_of.p (the.d (|Texaco| block.n)))) ?))
         (expected "Is the Nvidia block to the left of the Texaco block?"))
     ;; assert-equal takes the expected value, the actual value, then values to print out on failure.
-		(assert-equal expected (ulf2english ulf) 
+    (assert-equal expected (ulf2english ulf) 
                   expected (ulf2english ulf) ulf)
     ;; Same test for reduced ULF.
     (assert-equal expected (ulf2english reduced-ulf) 
