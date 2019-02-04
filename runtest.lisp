@@ -1,0 +1,5 @@
+(load "load")
+(load "test/blocks-world-qa")
+(in-package :ulf2english)
+(load-uppen-morph *uppen-morph-filepath*)
+(run-tests)
