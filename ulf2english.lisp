@@ -5,8 +5,8 @@
 
 (setq *debug-ulf2english* nil)
 
-;; Post formats a ULF-to-string mapping.  
-;; If it is a name (e.g. |John|), the pipes are stripped off.  
+;; Post formats a ULF-to-string mapping.
+;; If it is a name (e.g. |John|), the pipes are stripped off.
 ;; If not a name replace dash and underscores with spaces.
 ;; Otherwise, the string is made lowercase.
 (defun post-format-ulf-string (s)
@@ -57,7 +57,7 @@
     ((null ulf) nil)
     ((atom ulf)
      (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
-       (ulf:add-suffix 
+       (ulf:add-suffix
          (um-conjugate word (suffix-to-pos suffix) (list '3pl))
          suffix)))
     ;; TODO: handle recursive cases...
@@ -68,13 +68,13 @@
 ; Converts the given ULF to the tensed surface form if the input is of the form
 ; (tense ulf).  Otherwise, it just returns the ulf.
 ;
-; e.g. 
+; e.g.
 ;   (past run.v) -> ran.v
 ;   (pres sleep.v) -> sleep.v
 ; TODO: handle prog, perf...
-  (cond 
+  (cond
     ;; Simple case where there's tense and a simple verb.
-    ((and (= 2 (length ulf)) 
+    ((and (= 2 (length ulf))
           (ulf:lex-tense? (first ulf))
           (or (verb? (second ulf))
               (aux? (second ulf))))
@@ -103,10 +103,10 @@
 
 (defun pasv-to-surface! (ulf)
 ;`````````````````````
-; Converts the given ULF to the pasv form if the input is of the form 
+; Converts the given ULF to the pasv form if the input is of the form
 ; (pasv ulf).  Otherwise, it returns the input directly.
 ;
-; e.g. 
+; e.g.
 ;   (pasv hit.v) -> ((past be.v) hit.v)
 ;   (pasv confuse.v) -> ((past be.v) confused.v)
   (cond
@@ -138,6 +138,40 @@
                    :rule-order :slow-forward))
 
 
+
+;; Function that takes a relational noun in ULF and transforms it into bare
+;; noun form. It's meant for TTT mapping, hence the exclamation mark ending.
+(defun unrel-noun! (ulf)
+  (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
+    (let ((wchars (util:split-into-atoms word))
+          (tchars (util:split-into-atoms suffix)))
+      (util:fuse-into-atom
+        (append (reverse (nthcdr 3 (reverse wchars)))
+                '(\.)
+                tchars)))))
+
+;; Converts relational nouns to versions closer to surface form. Implicit
+;; referents lead to a deletion of the preposition, e.g.
+;;   (on.p ({the}.d (top-of.n *ref)))
+;;   -> (on.p ({the}.d top.n))
+(defun relational-nouns-to-surface (ulf)
+  (util:unhide-ttt-ops
+    (ttt:apply-rules '((/ (lex-rel-noun? (! [*S] [*REF]))
+                          (unrel-noun! lex-rel-noun?)))
+                     (util:hide-ttt-ops ulf) :max-n 500
+                     :rule-order :slow-forward)))
+
+;; List of functions for preprocessing ULFs in context (i.e. before any
+;; transformation of the ULF).
+(defparameter *contextual-preprocess-fns*
+  (list #'relational-nouns-to-surface))
+;; Preprocesses the ULF formula according to contextual cues, which are
+;; separate from morphological modifications.
+(defun contextual-preprocess (ulf)
+  (reduce #'(lambda (acc fn) (funcall fn acc))
+          *contextual-preprocess-fns*
+          :initial-value ulf))
+
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
 (defun ulf2english (ulf)
@@ -145,11 +179,12 @@
 
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
-  ;; "or", "to".  
+  ;; "or", "to".
   ;; TODO: just have a canonicalization function for introducing implicit
   ;; suffixes and another canonicalization function for identifying words that
   ;; appear in the surface form.
-  (let* ((morph-added (add-morphology ulf))
+  (let* ((cntxt-preprocd (contextual-preprocess ulf))
+         (morph-added (add-morphology cntxt-preprocd))
          (surface-only (remove-if-not #'is-surface-token?
                                       (alexandria:flatten morph-added)))
          (stringified (mapcar #'util:sym2str surface-only))
@@ -160,6 +195,7 @@
          (postform (mapcar #'post-format-ulf-string rejoined)))
     (if *debug-ulf2english*
       (progn
+        (format t "contextual-preprocess ~s" cntxt-preprocd)
         (format t "morph-added ~s~%" morph-added)
         (format t "Surface-only ~s~%" surface-only)
         (format t "stringified ~s~%" stringified)
