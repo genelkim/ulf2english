@@ -450,33 +450,48 @@
 (gen-blocks-qa-test bwqa-v16
   (:viet-bwqa)
   "What color is the block to the left of the Nvidia block?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds block.n
-                                    (to.p (the.d (left-of.n (the.d (|Nvidia| block.n)))))))))) ?))
+  '(sub (what.mod-n color.n) 
+         (((pres be.v) 
+           (the.d (n+preds block.n
+                           (to.p (the.d (left-of.n (the.d (|Nvidia| block.n)))))))
+           *h) ?)))
 
 (gen-blocks-qa-test bwqa-v17
   (:viet-bwqa)
   "What color is the block that is near the leftmost red block?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds block.n
-                                                      (that.rel ((pres be.v)
-                                                                  (near.p (the.d ((most left.a) (red.a block.n))))))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds block.n
+                          (that.rel ((pres be.v)
+                                     (near.p (the.d ((most left.a) (red.a block.n))))))))
+          *h) ?)))
 
 (gen-blocks-qa-test bwqa-v18
   (:viet-bwqa)
   "What color are the blocks near to the Toyota block?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds (plur block.n)
-                                                      (near.a (to.p-arg (the.d (|Toyota| block.n))))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds (plur block.n)
+                          (near.a (to.p-arg (the.d (|Toyota| block.n))))))
+          *h) ?)))
 
 (gen-blocks-qa-test bwqa-v19
   (:viet-bwqa)
   "What color is the block close to the front edge of the table?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds block.n
-                                                   (close.a (to.p-arg (the.d (front.a (edge-of.n (the.d table.n))))))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds block.n
+                          (close.a (to.p-arg (the.d (front.a (edge-of.n (the.d table.n))))))))
+          *h) ?)))
 
 (gen-blocks-qa-test bwqa-v20
   (:viet-bwqa)
   "What color are the blocks near any edge of the table?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds (plur block.n)
-                                                      (near.p (any.d (edge-of.n (the.d table.n))))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds (plur block.n)
+                          (near.p (any.d (edge-of.n (the.d table.n))))))
+          *h) ?)))
 
 (gen-blocks-qa-test bwqa-v21
   (:viet-bwqa)
@@ -497,27 +512,39 @@
 (gen-blocks-qa-test bwqa-v24
   (:viet-bwqa)
   "What color is the middle block in the longest row?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds (middle.a block.n)
-                                                      (in.p (the.d ((most long.a) row.n)))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds (middle.a block.n)
+                          (in.p (the.d ((most long.a) row.n)))))
+          *h) ?)))
 
 (gen-blocks-qa-test bwqa-v25
   (:viet-bwqa)
   "What colors are the blocks that are under some blue block?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds (plur block.n)
-                                                      (that.rel ((pres be.v)
-                                                                  (under.p (some.d (blue.n (plur block.n))))))))))) ?))
+  '(sub (what.mod-n (plur color.n)) 
+        (((pres be.v) 
+          (the.d (n+preds (plur block.n)
+                          (that.rel ((pres be.v)
+                                     (under.p (some.d (blue.n (plur block.n))))))))
+          *h) ?)))
                                                    
 (gen-blocks-qa-test bwqa-v26
   (:viet-bwqa)
   "What color is the lowest block of the shortest stack?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds ((most low.a) block.n)
-                                                      (of.p (the.d ((most short.a) stack.n)))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds ((most low.a) block.n)
+                          (of.p (the.d ((most short.a) stack.n))))))
+         *h) ?))
 
 (gen-blocks-qa-test bwqa-v27
   (:viet-bwqa)
   "What color is the last block in the leftmost row?"
-  '(((what.d color.n) ((pres be.v) (= (the.d (n+preds (last.a block.n)
-                                                      (in.p (the.d ((most left.a) row.n)))))))) ?))
+  '(sub (what.mod-n color.n) 
+        (((pres be.v) 
+          (the.d (n+preds (last.a block.n)
+                          (in.p (the.d ((most left.a) row.n)))))
+          *h) ?)))
 
 
 ;;
