@@ -83,7 +83,7 @@
   (:gene-bwqa)
   "Does the tallest stack have a red block on top?"
   '(((pres do.aux-s) (the.d ((most tall.a) stack.n))
-     (have.v (a.d (red.a block.n)) (on.p ({the}.d (top-of.n *ref}))))) ?))
+     (have.v (a.d (red.a block.n)) (on.p ({the}.d (top-of.n *ref))))) ?))
 (gen-blocks-qa-test bwqa-g8
   (:gene-bwqa)
   "Is the Toyota block a part of some stack?"
