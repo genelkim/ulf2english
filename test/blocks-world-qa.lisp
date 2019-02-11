@@ -351,6 +351,8 @@
 ;; How many blocks are behind any red block?
 ;; How many blocks are on top of any blue block?
 ;; How many blocks are between any other blocks?
+
+;; 61 - 91
 ;; How many blocks are facing any corner of the table?
 ;; How many stacks are on the table?
 ;; How many rows are on the table?
@@ -371,6 +373,199 @@
 ;; What is the the blocks behind the Nvidia block?
 ;; What is the block that is at the rightmost red block?
 ;; Which block is the highest?
+;; Which block is on two other blocks?
+;; Which block is in the center of the table?
+;; What blocks are in the longest row?
+;; What block is halfway on top of any other block?
+;; Which block is side by side with the Texaco block?
+;; What is the farthest block from the center of the table?
+;; Which block the Nvidia block is on top of?
+;; Which block is very close to the front edge of the table?
+;; What is in the middle of the table?
+;; Which red block is the closest to the Toyota block?
+;; Which red blocks are directly on the table?
+
+(gen-blocks-qa-test bwqa-gp61
+		    (:georgiy-bwqa)
+		    "How many blocks are facing any corner of the table?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) (= (ka (face.v (any.d (n+preds corner.n (of.p (the.d table.n))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp62
+		    (:georgiy-bwqa)
+		    "How many stacks are on the table?"
+		    '(((k ((How.mod-a many.a) (plur stack.n)))
+		       ((pres be.v) (on.p (the.d table.n)))) ?))
+
+(gen-blocks-qa-test bwqa-gp63
+		    (:georgiy-bwqa)
+		    "How many rows are on the table?"
+		    '(((k ((How.mod-a many.a) (plur row.n)))
+		       ((pres be.v) (on.p (the.d table.n)))) ?))
+
+(gen-blocks-qa-test bwqa-gp64
+		    (:georgiy-bwqa)
+		    "How many blocks are on the left side of the table?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) (on.p (the.d (n+preds (left.a side.n) (of.p (the.d table.n))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp65
+		    (:georgiy-bwqa)
+		    "How many blocks are in the tallest stack?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) (in.p (the.d (most-n tall.a stack.n))))) ?))
+
+(gen-blocks-qa-test bwqa-gp66
+		    (:georgiy-bwqa)
+		    "How many blocks are in the longest row?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) (in.p (the.d (most-n long.a row.n))))) ?))
+
+(gen-blocks-qa-test bwqa-gp67
+		    (:georgiy-bwqa)
+		    "How many blocks are between any two stacks?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) (between.p (any.d (two.a (plur stack.n)))))) ?))
+
+(gen-blocks-qa-test bwqa-gp68
+		    (:georgiy-bwqa)
+		    "How many blocks are clear?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) clear.a)) ?))
+
+(gen-blocks-qa-test bwqa-gp69
+		    (:georgiy-bwqa)
+		    "How many blocks are in some row or stack?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) (in.p (some.d (row.n or.cc stack.n))))) ?))
+
+(gen-blocks-qa-test bwqa-gp70
+		    (:georgiy-bwqa)
+		    "How many blocks are not touching the table?"
+		    '(((k ((How.mod-a many.a) (plur block.n)))
+		       ((pres be.v) not.adv-s (ka (touch.v (the.d table.n))))) ?))
+
+(gen-blocks-qa-test bwqa-gp71
+		    (:georgiy-bwqa)
+		    "What are the blocks on top of the Toyota block?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (n+preds (plur block.n) (on.p (k (n+preds top.n (of.p (the.d (|Toyota|.n block.n))))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp72
+		    (:georgiy-bwqa)
+		    "What are the blocks that are not on top of any other block?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (n+preds (plur block.n) (that.rel ((pres be.v) not.adv-s (on.p (k (n+preds top.n (of.p (any.d (other.a block.n))))))))))))) ?))
+
+;;(gen-blocks-qa-test bwqa-gp73
+;;		    (:georgiy-bwqa)
+;;"What is the block closest to the rightmost red block?"
+;;((What.pro ((pres be.v) (= (the.d (n+preds block.n ({that}.rel ((pres be.v) (most-n close.a (n+preds {block}.n (to.p (the.d (most-n right.a (red.a block.n))))))))))))) ?)
+
+(gen-blocks-qa-test bwqa-gp74
+		    (:georgiy-bwqa)
+		    "What is the block between the Toyota and the SRI block?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (n+preds block.n (between.p ((the.d (|Toyota|.n {block}.n)) and.cc (the.d (|SRI|.n block.n))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp75
+		    (:georgiy-bwqa)
+		    "What are the blocks near the corners of the table?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (plur (n+preds block.n (near.p (the.d (plur (n+preds corner.n (of.p (the.d table.n)))))))))))) ?))
+
+;;(gen-blocks-qa-test bwqa-gp76
+;;(:georgiy-bwqa)
+;;"What is the block closest to the front edge of the table?"
+;;'((What.pro ((pres be.v) (= (the.d (n+preds block.n (closest.a (to.p (the.d (n+preds (plur corner.n) (of.p (the.d table.n))))))))))) ?)
+
+(gen-blocks-qa-test bwqa-gp77
+		    (:georgiy-bwqa)
+		    "What is the block on top of the tallest stack?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (n+preds block.n (on.p (k (n+preds top.n (of.p (the.d (most-n tall.a stack.n))))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp78
+		    (:georgiy-bwqa)
+		    "What are the blocks behind the Nvidia block?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (n+preds (plur block.n) (behind.p (the.d (|Nvidia|.n block.n)))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp79
+		    (:georgiy-bwqa)
+		    "What is the block that is at the rightmost red block?"
+		    '((What.pro
+		       ((pres be.v) (= (the.d (n+preds block.n (that.rel ((pres be.v) (at.p (the.d (most-n right.a (red.a block.n))))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp80
+		    (:georgiy-bwqa)
+		    "Which block is the highest?"
+		    '(((Which.d block.n)
+		       ((pres be.v) (= (the.d (most-n high.a {block}.n))))) ?))
+
+(gen-blocks-qa-test bwqa-gp81
+		    (:georgiy-bwqa)
+		    "Which block is on two other blocks?"
+		    '(((Which.d block.n)
+		       ((pres be.v) (on.p (two.d (other.a (plur block.n)))))) ?))
+
+(gen-blocks-qa-test bwqa-gp82
+		    (:georgiy-bwqa)
+		    "Which block is in the center of the table?"
+		    '(((Which.d block.n)
+		       ((pres be.v) (in.p (the.d (n+preds center.n (of.p (the.d table.n))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp83
+		    (:georgiy-bwqa)
+		    "What blocks are in the longest row?"
+		    '(((What.d (plur block.n))
+		       ((pres be.v) (in.p (the.d (most-n long.a row.n))))) ?))
+
+(gen-blocks-qa-test bwqa-gp84
+		    (:georgiy-bwqa)
+		    "What block is halfway on top of any other block?"
+		    '(((What.d block.n)
+		       ((pres be.v) (halfway.adv-a (on.p (k (n+preds top.n (of.p (any.d (other.a block.n))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp85
+		    (:georgiy-bwqa)
+		    "Which block is side by side with the Texaco block?"
+		    '(((Which.d block.n)
+		       ((pres be.v) (side-by-side.adv-a (with.p (the.d (|Texaco|.n block.n)))))) ?))
+
+;;(gen-blocks-qa-test bwqa-gp86
+;;  (:georgiy-bwqa)
+;;"What is the farthest block from the center of the table?"
+;;'((What.pro ((pres be.v) (the.d (most-pc far.a block.n (from.p (the.d (n+preds center.n (of.p (the.d table.n))))))))) ?)
+
+(gen-blocks-qa-test bwqa-gp87
+		    (:georgiy-bwqa)
+		    "Which block the Nvidia block is on top of?"
+		    '((sub (Which.d block.n) ((the.d (|Nvidia|.n block.n))
+					      ((pres be.v) (on.p (k (n+preds top.n (of.p *h))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp88
+		    (:georgiy-bwqa)
+		    "Which block is very close to the front edge of the table?"
+		    '(((Which.d block.n)
+		       ((pres be.v) ((adv-a (very.mod-a close.a)) (to.p (the.d (front.a (n+preds edge.n (of.p (the.d table.n))))))))) ?))
+
+(gen-blocks-qa-test bwqa-gp89
+		    (:georgiy-bwqa)
+		    "What is in the middle of the table?"
+		    '((What.pro
+		       ((pres be.v) (in.p (the.d (n+preds middle.n (of.p (the.d table.n))))))) ?))
+
+;;(gen-blocks-qa-test bwqa-gp90
+;;		    (:georgiy-bwqa)
+;;"Which red block is the closest to the Toyota block?"
+;;'(((Which.d (red.a block.n)) ((pres be.v) (the.d (most-pc close.a (to.p (the.d (|Toyota|.n block.n))))))) ?)
+
+(gen-blocks-qa-test bwqa-gp91
+		    (:georgiy-bwqa)
+		    "Which red blocks are directly on the table?"
+		    '(((Which.d (red.a (plur block.n)))
+		       ((pres be.v) (directly.adv-a (on.p (the.d table.n))))) ?))
 
 ;;
 ;; Tianyi
