@@ -63,3 +63,9 @@ Unit Test Summary
 $
 ```
 
+## After making changes
+
+- Delete fasl files in project (e.g. `rm *.fasl)
+- Delete fasl files in dependency projects if the dependency has changed (e.g. pulling recent version)
+- Run (ql:quickload :dependency-name)
+
