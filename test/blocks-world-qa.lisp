@@ -4,7 +4,9 @@
 (in-package :ulf2english)
 
 (setq *print-failures* t)
+(setq *print-errors* t)
 (setq *print-summary* t)
+(setq *summarize-results* t)
 
 ;; Macro for defining tests with less writing.
 (defmacro gen-blocks-qa-test (name tags sentence ulf)
