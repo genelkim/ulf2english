@@ -137,6 +137,13 @@
                    ulf :max-n 500
                    :rule-order :slow-forward))
 
+(defun capitalize-first (string)
+  (if (zerop (length string))
+      ""
+      (let ((copy (copy-seq string)))
+        (setf (char copy 0)
+              (char-upcase (char copy 0)))
+        copy)))
 
 
 ;; Function that takes a relational noun in ULF and transforms it into bare
@@ -201,5 +208,5 @@
         (format t "stringified ~s~%" stringified)
         (format t "rejoined ~s~%" rejoined)
         (format t "postform ~s~%" postform)))
-    (cl-strings:join postform :separator " ")))
+    (capitalize-first (cl-strings:join postform :separator " "))))
 
