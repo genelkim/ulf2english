@@ -1,4 +1,4 @@
-(in-package :ulf2english);;; Gene Kim 11-24-2018
+;;; Gene Kim 11-24-2018
 ;;; Functions for generating English text from ULF formulas.
 
 (in-package :ulf2english)
@@ -184,7 +184,7 @@
 	   (or (eq (cadr ulf) '?)
 	       (eq (cadr ulf) '!)))
       (string (cadr ulf))
-      "."))
+    "."))
 
 
 ;; Maps a ULF formula to a corresponding surface string.
