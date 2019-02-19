@@ -179,6 +179,21 @@
           *contextual-preprocess-fns*
           :initial-value ulf))
 
+;;Extracts and returns the sentence punctuation from the ULF (sentence
+;;termination symbol only)
+;;Parameters:
+;;ulf - the ULF as a list
+;;Retval:
+;;the sentence termination character as a string
+;;---Georgiy
+(defun extract-punctuation (ulf)
+  (if (and (> (length ulf) 1)
+	   (or (eq (cadr ulf) '?)
+	       (eq (cadr ulf) '!)))
+      (string (cadr ulf))
+    "."))
+
+
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
 (defun ulf2english (ulf)
@@ -199,7 +214,8 @@
          ;(pruned (mapcar #'(lambda (x) (subseq x 0 (max 1 (1- (length x))))) dotsplit))
          ;(rejoined (mapcar #'(lambda (x) (cl-strings:join x :separator ".")) pruned))
          (rejoined (mapcar #'ulf:strip-suffix stringified))
-         (postform (mapcar #'post-format-ulf-string rejoined)))
+         (postform (mapcar #'post-format-ulf-string rejoined))
+	 (punct (list (extract-punctuation ulf))))
     (if *debug-ulf2english*
       (progn
         (format t "contextual-preprocess ~s" cntxt-preprocd)
@@ -208,5 +224,6 @@
         (format t "stringified ~s~%" stringified)
         (format t "rejoined ~s~%" rejoined)
         (format t "postform ~s~%" postform)))
-    (capitalize-first (cl-strings:join postform :separator " "))))
+    (capitalize-first 
+     (cl-strings:join (cons (cl-strings:join postform :separator " ") punct) :separator ""))))
 
