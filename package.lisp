@@ -4,6 +4,6 @@
 (in-package :cl-user)
 
 (defpackage :ulf2english
-  (:use :cl :ttt :util :ulf-lib :cl-strings :lisp-unit)
+  (:use :cl :ttt :util :ulf-lib :cl-strings :inferior-shell :lisp-unit :drakma :cl-json)
   (:export ulf2english))
 
