@@ -1,6 +1,11 @@
+# pyenv-virtualenv marking files.
+.python-version
+
+# Vim and Emacs temporary files.
 .*.swp
 *~
 
+# Lisp compiled files.
 *.FASL
 *.fasl
 *.lisp-temp
