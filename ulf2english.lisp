@@ -82,7 +82,7 @@
            (verb (second ulf)))
        (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
          (ulf:add-suffix
-           (um-conjugate word (suffix-to-pos suffix) (list tense))
+           (intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense)))
            suffix))))
     ;; Ignore all other cases for now.
     (t ulf)))
@@ -101,6 +101,14 @@
     ;; Just return since it's not an atom.
     word))
 
+(defun pen-ppart (word)
+;```````````````````````
+; Takes a word symbol and uses a pattern.en to make it past participle form.
+   ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
+   ;; with "ppart".
+   (intern (pattern-en-conjugate (string word) :tense 'PAST
+                                 :aspect 'PROGRESSIVE)))
+
 (defun pasv-to-surface! (ulf)
 ;`````````````````````
 ; Converts the given ULF to the pasv form if the input is of the form
@@ -109,14 +117,13 @@
 ; e.g.
 ;   (pasv hit.v) -> ((past be.v) hit.v)
 ;   (pasv confuse.v) -> ((past be.v) confused.v)
+;   TODO: get the inherited tense
   (cond
     ((and (= (length ulf))
           (eq 'pasv (first ulf))
           (verb? (second ulf)))
      (multiple-value-bind (word suffix) (ulf:split-by-suffix (second ulf))
-       (multiple-value-bind (pasvd pasv-succ) (um-conjugate word 'v '(PPART))
-         (if (not pasv-succ)
-           (setq pasvd (dumb-ppart pasvd)))
+       (let ((pasvd (pen-ppart word)))
          (list '(past be.v)
                (ulf:add-suffix pasvd suffix)))))))
 
