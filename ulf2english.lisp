@@ -152,6 +152,9 @@
               (char-upcase (char copy 0)))
         copy)))
 
+(defun add-punct-curried (punct)
+  (lambda (sent)
+    (cl-strings:join (list sent punct) :separator "")))
 
 ;; Function that takes a relational noun in ULF and transforms it into bare
 ;; noun form. It's meant for TTT mapping, hence the exclamation mark ending.
@@ -201,6 +204,16 @@
     "."))
 
 
+(defparameter *ulf2english-stages*
+  '((contextual-preprocess "Contextual preprocess")
+    (add-morphology "Adding morphology")
+    ((lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
+     "Only retaining surface symbols")
+    ((lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
+    ((lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
+    ((lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
+    ((lambda (x) (cl-strings:join x :separator " ")) "Glue together")))
+
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
 (defun ulf2english (ulf)
@@ -212,25 +225,16 @@
   ;; TODO: just have a canonicalization function for introducing implicit
   ;; suffixes and another canonicalization function for identifying words that
   ;; appear in the surface form.
-  (let* ((cntxt-preprocd (contextual-preprocess ulf))
-         (morph-added (add-morphology cntxt-preprocd))
-         (surface-only (remove-if-not #'is-surface-token?
-                                      (alexandria:flatten morph-added)))
-         (stringified (mapcar #'util:sym2str surface-only))
-         ;(dotsplit (mapcar #'(lambda (x) (cl-strings:split x ".")) stringified))
-         ;(pruned (mapcar #'(lambda (x) (subseq x 0 (max 1 (1- (length x))))) dotsplit))
-         ;(rejoined (mapcar #'(lambda (x) (cl-strings:join x :separator ".")) pruned))
-         (rejoined (mapcar #'ulf:strip-suffix stringified))
-         (postform (mapcar #'post-format-ulf-string rejoined))
-	 (punct (list (extract-punctuation ulf))))
-    (if *debug-ulf2english*
-      (progn
-        (format t "contextual-preprocess ~s" cntxt-preprocd)
-        (format t "morph-added ~s~%" morph-added)
-        (format t "Surface-only ~s~%" surface-only)
-        (format t "stringified ~s~%" stringified)
-        (format t "rejoined ~s~%" rejoined)
-        (format t "postform ~s~%" postform)))
-    (capitalize-first 
-     (cl-strings:join (cons (cl-strings:join postform :separator " ") punct) :separator ""))))
+  (let* ((punct (extract-punctuation ulf))
+         (add-punct-fn (add-punct-curried punct))
+        staged)
+    (setq staged (reduce #'(lambda (acc new)
+                             (let* ((fn (first new))
+                                    (desc (second new))
+                                    (res (funcall fn acc)))
+                               (if *debug-ulf2english*
+                                 (format t "~a: ~s~%" desc res))
+                               res))
+                         *ulf2english-stages* :initial-value ulf))
+    (funcall (compose add-punct-fn #'capitalize-first) staged)))
 
