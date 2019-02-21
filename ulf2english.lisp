@@ -203,6 +203,25 @@
       (string (cadr ulf))
     "."))
 
+;; Input: a list of tokens.
+;; Output: tokens with certain determiner-"thing"/"one" combinations merged.
+;; 
+;; Ex. "any" "one" -> "anyone"
+;;     "every" "thing" -> "everything"
+(defun merge-det-thing-combos (tokens)
+  (cond 
+    ((null tokens) nil)
+    (t (let* ((rec (merge-det-thing-combos (cdr tokens)))
+              (cur (car tokens))
+              (toprec (car rec)))
+         (if (and (member (string-downcase cur) '("any" "no" "every") 
+                          :test #'equal)
+                  (member (string-downcase toprec) '("one" "thing") 
+                          :test #'equal))
+           ;; If the pattern matches, merge the strings.
+           (cons (cl-strings:join (list cur toprec)) (cdr rec))
+           ;; Otherwise, just build up the list again.
+           (cons cur rec))))))
 
 (defparameter *ulf2english-stages*
   '((contextual-preprocess "Contextual preprocess")
@@ -212,6 +231,7 @@
     ((lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
     ((lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     ((lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
+    (merge-det-thing-combos "Merge special determiner-noun combinations")
     ((lambda (x) (cl-strings:join x :separator " ")) "Glue together")))
 
 ;; Maps a ULF formula to a corresponding surface string.
