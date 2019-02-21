@@ -101,9 +101,12 @@
     ;; Just return since it's not an atom.
     word))
 
-(defun pen-ppart (word)
+(defun pen-past-participle (word)
 ;```````````````````````
 ; Takes a word symbol and uses a pattern.en to make it past participle form.
+;   confuse -> confused
+;   run -> run
+;   mention -> mentioned
    ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
    ;; with "ppart".
    (intern (pattern-en-conjugate (string word) :tense 'PAST
@@ -127,6 +130,81 @@
          (list '(past be.v)
                (ulf:add-suffix pasvd suffix)))))))
 
+(defun verb-to-present-participle! (verb)
+;`````````````````````````````````
+; Converts the given verb symbol to present participle form.
+;  run.v -> running.v
+;  is.v -> being.v
+  (if (and (symbolp verb) (verb? verb))
+    (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
+      (ulf:add-suffix 
+        (intern (pattern-en-conjugate (string word) :tense 'PRESENT
+                                      :aspect 'PROGRESSIVE))
+        suffix))))
+
+
+(defun search-main-verb (vp &key (sub nil))
+;``````````````````````
+; Searches vp (a ULF VP) for the main verb. If sub is not nil, sub substitutes
+; for the main verb.
+;
+; Returns the following values in a list
+;   main verb
+;   whether is was found
+;   new vp
+  (cond
+    ;; Simple lexical case.
+    ((lex-verb? vp) (values vp t (if sub sub vp)))
+    ;; Starts with a verb -- recurse into verb.
+    ((and (listp vp)
+          (verb? (car vp)))
+     (multiple-value-bind (mv found new-carvp) (search-main-verb (car vp) :sub sub)
+       (values mv found (cons new-carvp (cdr vp)))))
+    ;; Starts with adv-a or phrasal sentence operator -- recurse into cdr.
+    ((and (listp vp)
+          (or (adv-a? (car vp)) (phrasal-sent-op? (car vp))))
+     (multiple-value-bind (mv found new-cdrvp) (search-main-verb (cdr vp) :sub sub)
+       (values mv found (cons (car vp) new-cdrvp))))
+    ;; Passivized verb.
+    ((and (listp vp)
+          (= (length vp) 2)
+          (equal 'pasv (first vp))
+          (lex-verb? (second vp)))
+     (multiple-value-bind (mv found new-cdrvp) (search-main-verb (cdr vp) :sub sub)
+       (values mv found (cons (car vp) new-cdrvp))))
+    ;; Otherwise, it's not found.
+    (t (values nil nil vp))))
+
+(defun find-main-verb (vp)
+;````````````````````
+; Finds the main verb in a ULF VP.  
+  (search-main-verb vp))
+
+(defun replace-main-verb (vp sub)
+;```````````````````````
+; Find the main verb and returns a new VP with the substitute value.
+  (multiple-value-bind (mv found newvp) (search-main-verb vp :sub sub)
+    newvp))
+
+(defun vp-to-present-participle! (vp)
+;```````````````````````````````
+; Converts a VP so that the main verb is in present-participle form.
+;   '(sleep.v (adv-a (in.p (the.d bed.n))))
+;   -> '(sleeping.v (adv-a (in.p (the.d bed.n))))
+;   '(quickly.adv-a (look.v around.adv-a))
+;   -> '(quickly.adv-a (looking.v around.adv-a))
+  (cond 
+    ((verb? vp) 
+     (let* ((main-verb (find-main-verb vp))
+            (pres-part (verb-to-present-participle! main-verb)))
+       (replace-main-verb vp pres-part)))
+    ;; If it isn't a verb phrase, just return.
+    (t vp)))
+
+(defun all-vp-to-present-participle! (ulf-frag)
+  ;(mapcar #'vp-to-present-participle! ulf-frag))
+  (vp-to-present-participle! ulf-frag))
+
 (defparameter *plur-to-surface*
   '(/ (plur _!)
       (pluralize! _!)))
@@ -137,10 +215,18 @@
   '(/ (pasv _!)
       (pasv-to-surface! (pasv _!))))
 
+(defparameter *pres-part-for-post-modifying-verbs*
+;`````````````````````````````````````````````
+; Transform noun and np post-modifying verbs to present-pariciple
+; form. E.g. (n+preds man.n walk.v) -> 
+  '(/ ((!1 n+preds np+preds n+post) _!2 _+3)
+      (!1 _!2 (all-vp-to-present-participle! _+3))))
+
 (defun add-morphology (ulf)
   (ttt:apply-rules (list *pasv-to-surface*
                          *plur-to-surface*
-                         *tense-to-surface*)
+                         *tense-to-surface*
+                         *pres-part-for-post-modifying-verbs*)
                    ulf :max-n 500
                    :rule-order :slow-forward))
 
