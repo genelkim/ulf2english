@@ -7,7 +7,6 @@
   :author "Gene Louis Kim"
   :depends-on (:ttt :util :ulf-lib :cl-strings :inferior-shell :drakma :cl-json :lisp-unit)
   :components ((:file "package")
-               (:file "uppen-morph")
                (:file "pattern-en")
                (:file "ulf2english"))) 
 

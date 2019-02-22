@@ -46,10 +46,5 @@
 (asdf:operate 'asdf:load-op 'ulf2english) ;; Compile and load as necessary
 ;(asdf:operate 'asdf:load-source-op 'ulf2english) ;; Doesn't compile
 
-;; Set parameters for loading the uppen-morph data.
-(setq ulf2english::*uppen-morph-filepath*
-      "resources/morph_english.sexp")
-(setq ulf2english::*top10000-word-filepath*
-      "resources/google-10000-english.txt")
 ;(setq ulf2english:*debug-ulf2english* t)
 

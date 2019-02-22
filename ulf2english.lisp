@@ -54,15 +54,21 @@
 (defun pluralize! (ulf)
 ;``````````````````````
 ; Converts the given ULF to the plural version of the surface form.
+    ;; TODO: handle recursive cases... (child-of.n ...)
   (cond
     ((null ulf) nil)
-    ((atom ulf)
+    ((not (atom ulf)) ulf)
+    ((ulf:lex-elided? ulf) ulf)
+    (t
      (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
        (ulf:add-suffix
-         (um-conjugate word (suffix-to-pos suffix) (list '3pl))
-         suffix)))
-    ;; TODO: handle recursive cases...
-    (t ulf)))
+         (cond
+           ;; Preserve case for strict names.
+           ((ulf:is-strict-name? word)
+            (intern (pattern-en-pluralize (string word) :preserve-case t)))
+           ;; Otherwise ignore case.
+           (t (intern (pattern-en-pluralize (string word) :preserve-case nil))))
+         suffix)))))
 
 (defun add-tense! (ulf)
 ;``````````````````````
