@@ -282,18 +282,41 @@
   '(/ (adv-a (!1 verb?))
       (adv-a (vp-to-participle! !1))))
 
+;; Functions to help with writing TTT rules on prog and perf since they have
+;; tensed variants.
+(defun prog2be! (proginst)
+  (subst 'be.v 'prog proginst))
+(defun perf2have! (perfinst)
+  (subst 'have.v 'perf perfinst))
+
+;; All the prog handling rules.
 (defparameter *prog2surface*
-  '(/ (prog (!1 verb?))
-      (be.v (vp-to-present-participle! !1))))
-(defparameter *tensed-prog2surface*
-  '(/ (((!1 tense?) prog) (!2 verb?))
-      ((!1 be.v) (vp-to-present-participle! !2))))
+  '(/ ((!1 prog (lex-tense? prog)) ; prog, (pres prog), etc.
+       (*1 phrasal-sent-op?)       ; not, definitely.adv-s, etc.
+       (!2 verb?))
+      ((prog2be! !1) *1 (vp-to-present-participle! !2))))
+(defparameter *inv-prog2surface*
+  '(/ ((!1 prog (lex-tense? prog)) ; prog, (pres prog), etc.
+       (*1 phrasal-sent-op?)       ; not, definitely.adv-s , etc.
+       (!2 term?)                  ; he.pro, |John|, etc.
+       (*2 phrasal-sent-op?)
+       (!3 verb?) _*3)             ; verb + rest
+      ;; Keep everything the same, except prog and the verb.
+      ((prog2be! !1) *1 !2 *2 (vp-to-present-participle! !3) _*3)))
+
+;; All the perf handling rules.
 (defparameter *perf2surface*
-  '(/ (perf (!1 verb?))
-      (have.v (vp-to-past-participle! !1))))
-(defparameter *tensed-perf2surface*
-  '(/ (((!1 tense?) perf) (!2 verb?))
-      ((!1 have.v) (vp-to-past-participle! !2))))
+  '(/ ((!1 perf (lex-tense? perf)) ; perf, (past perf), etc.
+       (*1 phrasal-sent-op?)       ; not, probably.adv-s, etc.
+       (!2 verb?))
+      ((perf2have! !1) *1 (vp-to-past-participle! !2))))
+(defparameter *inv-perf2surface*
+  '(/ ((!1 perf (lex-tense? perf)) ; perf, (past perf), etc.
+       (*1 phrasal-sent-op?)       ; not, probably.adv-s, etc.
+       (!2 term?)                  ; he.pro, |John|, etc.
+       (*2 phrasal-sent-op?)
+       (!3 verb?) _*3)
+      ((perf2be! !1) *1 !2 *2 (vp-to-past-participle! !3) _*3)))
 
 (defun add-morphology (ulf)
   (ttt:apply-rules
@@ -306,10 +329,9 @@
 
       ;; Initial interactive changes.
       *prog2surface*
-      *tensed-prog2surface*
+      *inv-prog2surface*
       *perf2surface*
-      *tensed-perf2surface*
-
+      *inv-perf2surface*
       ;; Various participles
       *participle-for-post-modifying-verbs*
       *participle-for-adv-a*
