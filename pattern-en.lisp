@@ -125,7 +125,10 @@
                     (parse . ,parse)))
          ;; Construct the Python function call.
          (python-call (python-call 'conjugate (list verb) arglist)))
-    (make-pattern-en-call python-call python-method)))
+    ;; Since it's all the same case anyway, make it upper case so it doesn't force
+    ;; a case sensitive symbol.
+    (string-upcase
+      (make-pattern-en-call python-call python-method))))
 
 ;; Takes an input noun string and pluralizes it.
 ;; NB: The pattern.en function has some additional parameters, but they don't
@@ -137,5 +140,5 @@
          (rawout (make-pattern-en-call python-call python-method)))
     (if preserve-case
       rawout
-      (string-downcase rawout))))
+      (string-upcase rawout))))
 
