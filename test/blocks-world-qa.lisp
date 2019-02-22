@@ -527,7 +527,7 @@
         (((pres be.v) 
           (the.d (n+preds (plur block.n)
                           (that.rel ((pres be.v)
-                                     (under.p (some.d (blue.n (plur block.n))))))))
+                                     (under.p (some.d (blue.n block.n)))))))
           *h) ?)))
                                                    
 (gen-blocks-qa-test bwqa-v26
