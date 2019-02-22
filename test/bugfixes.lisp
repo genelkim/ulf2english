@@ -22,3 +22,51 @@
     (assert-equal expected (ulf2english ulf)
                   expected (ulf2english ulf) ulf)))
 
+;; TODO: clean this up by using lists of pairs....
+(define-test participles-from-doc
+  "Proper handling of participles (examples from documentation on predicate modification)"
+  (:tag :bugfixes :participle)
+  (let ((sent-ulf-pairs
+         '(("I greeted the frequently returning member"
+            (i.pro ((past greet.v) 
+                         (the.d ((mod-n (frequently.adv-f return.v)) 
+                            (member-of.n *ref))))))
+           ("We’re required to submit a carefully written notice"
+            (we.pro ((pres (pasv require.v)) 
+                     (to (submit.v 
+                           (a.d ((mod-n (carefully.adv-a (pasv write.v))) 
+                                 notice.n)))))))
+           ("Kenneth nervously watched the woman, alarmed by her gun"
+            (|Kenneth| 
+              (nervously.adv-a 
+                ((past watch.v) (the.d woman.n)
+                                (adv-a ((pasv alarm.v) (by.p-arg (her.d gun.n))))))))
+           ("I went back to sleep, having heard this before"
+            (i.pro ((past go.v) back.adv-a (to.p-arg (k sleep.n))
+                                (adv-a (perf (hear.v this.pro before.adv-e))))))
+           ("Lifting weights for two hours, Ron developed sore muscles"
+            (sub 
+              (adv-a (lift.v (k (plur weight.n)) 
+                             (adv-e (for.p (two.d (plur hour.n))))))
+              (|Ron| ((past develop.v) (k (sore.a (plur muscle.n))) *h))))
+           ("Any student scoring a good grade on the exam will receive an award"
+            ((any.d (n+preds student.n
+                             (score.v (a.d (good.a grade.n)) 
+                                      (on.p-arg (the.d exam.n)))))
+             ((pres will.aux-s) (receive.v (an.d award.n)))))))
+        ;; We don't care about punctuation, casing or spaces in these tests.
+        (strclean (compose 
+                     #'cl-strings:clean
+                     #'remove-punctuation
+                     #'string-downcase)))
+    (mapcar
+      ;; For each pair, generate the ulf2english, clean the strings and compare.
+      #'(lambda (x)
+          (let ((expected (funcall strclean (first x)))
+                (ulf (second x))
+                generated)
+            (setq generated (funcall strclean (ulf2english ulf)))
+            (assert-equal expected generated
+                          expected generated ulf)))
+      sent-ulf-pairs)))
+

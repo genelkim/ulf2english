@@ -101,18 +101,7 @@
     ;; Just return since it's not an atom.
     word))
 
-(defun pen-past-participle (word)
-;```````````````````````
-; Takes a word symbol and uses a pattern.en to make it past participle form.
-;   confuse -> confused
-;   run -> run
-;   mention -> mentioned
-   ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
-   ;; with "ppart".
-   (intern (pattern-en-conjugate (string word) :tense 'PAST
-                                 :aspect 'PROGRESSIVE)))
-
-(defun pasv-to-surface! (ulf)
+(defun pasv2surface! (ulf)
 ;`````````````````````
 ; Converts the given ULF to the pasv form if the input is of the form
 ; (pasv ulf).  Otherwise, it returns the input directly.
@@ -125,23 +114,37 @@
     ((and (= (length ulf))
           (eq 'pasv (first ulf))
           (verb? (second ulf)))
-     (multiple-value-bind (word suffix) (ulf:split-by-suffix (second ulf))
-       (let ((pasvd (pen-ppart word)))
-         (list '(past be.v)
-               (ulf:add-suffix pasvd suffix)))))))
+     (list '(past be.v) (verb-to-past-participle! (second ulf))))))
+
+(defun verb-to-participle (verb &key (part-type 'PRESENT))
+;`````````````````````````````````
+; Converts the given verb symbol to participle form of the given type.
+; PRESENT
+;  run.v -> running.v
+;  is.v -> being.v
+; PAST
+;  run.v -> run.v
+;  confuse.v confused.v
+;   mention -> mentioned
+   ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
+   ;; with "ppart".
+  (assert (member part-type '(PRESENT PAST)))
+  (if (and (symbolp verb) (verb? verb))
+    (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
+      (ulf:add-suffix
+        (intern (pattern-en-conjugate (string word) :tense part-type
+                                      :aspect 'PROGRESSIVE))
+        suffix))))
+
+(defun verb-to-past-participle! (verb)
+  (verb-to-participle verb :part-type 'PAST))
 
 (defun verb-to-present-participle! (verb)
 ;`````````````````````````````````
 ; Converts the given verb symbol to present participle form.
 ;  run.v -> running.v
 ;  is.v -> being.v
-  (if (and (symbolp verb) (verb? verb))
-    (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
-      (ulf:add-suffix 
-        (intern (pattern-en-conjugate (string word) :tense 'PRESENT
-                                      :aspect 'PROGRESSIVE))
-        suffix))))
-
+  (verb-to-participle verb :part-type 'PRESENT))
 
 (defun search-main-verb (vp &key (sub nil))
 ;``````````````````````
@@ -153,8 +156,11 @@
 ;   whether is was found
 ;   new vp
   (cond
-    ;; Simple lexical case.
-    ((lex-verb? vp) (values vp t (if sub sub vp)))
+    ;; Simple lexical case or passive verb.
+    ((or (lex-verb? vp)
+         (and (listp vp) (= (length vp) 2)
+              (equal 'pasv (first vp)) (lex-verb? (second vp))))
+     (values vp t (if sub sub vp)))
     ;; Starts with a verb -- recurse into verb.
     ((and (listp vp)
           (verb? (car vp)))
@@ -170,15 +176,16 @@
           (= (length vp) 2)
           (equal 'pasv (first vp))
           (lex-verb? (second vp)))
-     (multiple-value-bind (mv found new-cdrvp) (search-main-verb (cdr vp) :sub sub)
-       (values mv found (cons (car vp) new-cdrvp))))
+       (values vp t (if sub sub vp)))
     ;; Otherwise, it's not found.
     (t (values nil nil vp))))
 
+
 (defun find-main-verb (vp)
 ;````````````````````
-; Finds the main verb in a ULF VP.  
+; Finds the main verb in a ULF VP.
   (search-main-verb vp))
+
 
 (defun replace-main-verb (vp sub)
 ;```````````````````````
@@ -186,49 +193,134 @@
   (multiple-value-bind (mv found newvp) (search-main-verb vp :sub sub)
     newvp))
 
-(defun vp-to-present-participle! (vp)
+
+(defun pasv-lex-verb? (arg)
+;````````````````````
+; True if arg is of the form (pasv <lexical verb>) and false otherwise.
+  (and (listp arg) (= (length arg) 2)
+       (eql 'pasv (first arg)) (lex-verb? (second arg))))
+
+
+(defun vp-to-participle! (vp &key (part-type nil))
 ;```````````````````````````````
-; Converts a VP so that the main verb is in present-participle form.
+; Converts a VP so that the main verb is in participle form.
+; If no specification is made to the participle form, it assumes that it's
+; present participle except in presence of a 'pasv' operator.
+; PRESENT PARTICIPLE
 ;   '(sleep.v (adv-a (in.p (the.d bed.n))))
 ;   -> '(sleeping.v (adv-a (in.p (the.d bed.n))))
 ;   '(quickly.adv-a (look.v around.adv-a))
 ;   -> '(quickly.adv-a (looking.v around.adv-a))
-  (cond 
-    ((verb? vp) 
+; PAST PARTICIPLE
+;   '((pasv sleep.v) (adv-a (in.p (the.d bed.n))))
+;   -> '(slept.v (adv-a (in.p (the.d bed.n))))
+;   '(carefully.adv-a (pasv write.v))
+;   -> '(carefully.adv-a written.v)
+  (assert (member part-type '(PRESENT PAST nil)))
+  (cond
+    ((verb? vp)
      (let* ((main-verb (find-main-verb vp))
-            (pres-part (verb-to-present-participle! main-verb)))
-       (replace-main-verb vp pres-part)))
+            (participle
+              (cond
+                ;; Present participle condition.
+                ((eql part-type 'PRESENT)
+                 (verb-to-present-participle! main-verb))
+                ;; Various past participle conditions.
+                ((and (eql part-type 'PAST) (atom main-verb))
+                 (verb-to-past-participle! main-verb))
+                ((and (eql part-type 'PAST) (pasv-lex-verb? main-verb))
+                 (verb-to-past-participle! (second main-verb)))
+                ((eql part-type 'PAST)
+                 (error "verb ~s is not a form that can become a past participle"
+                        main-verb))
+                ;; Default cases when part-type is nil.
+                ((atom main-verb)
+                 (verb-to-present-participle! main-verb))
+                ((pasv-lex-verb? main-verb)
+                 (verb-to-past-participle! (second main-verb)))
+                (t (error "verb ~s is not a form that can become a past participle"
+                          main-verb)))))
+       (replace-main-verb vp participle)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
 
-(defun all-vp-to-present-participle! (ulf-frag)
-  ;(mapcar #'vp-to-present-participle! ulf-frag))
-  (vp-to-present-participle! ulf-frag))
+;; Convenience functions (also for TTT).
+(defun vp-to-past-participle! (vp)
+  (vp-to-participle! vp :part-type 'PAST))
+(defun vp-to-present-participle! (vp)
+  (vp-to-participle! vp :part-type 'PRESENT))
 
-(defparameter *plur-to-surface*
+
+;(defun all-vp-to-present-participle! (ulf-frag)
+;  ;(mapcar #'vp-to-present-participle! ulf-frag))
+;  (vp-to-present-participle! ulf-frag))
+
+(defparameter *plur2surface*
   '(/ (plur _!)
       (pluralize! _!)))
-(defparameter *tense-to-surface*
+(defparameter *tense2surface*
   '(/ ((!1 ulf:lex-tense?) _!2)
       (add-tense! (!1 _!2))))
-(defparameter *pasv-to-surface*
+(defparameter *pasv2surface*
   '(/ (pasv _!)
-      (pasv-to-surface! (pasv _!))))
+      (pasv2surface! (pasv _!))))
 
-(defparameter *pres-part-for-post-modifying-verbs*
+(defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
 ; Transform noun and np post-modifying verbs to present-pariciple
-; form. E.g. (n+preds man.n walk.v) -> 
+; form. E.g. (n+preds man.n walk.v) ->
   '(/ ((!1 n+preds np+preds n+post) _!2 _+3)
-      (!1 _!2 (all-vp-to-present-participle! _+3))))
+      (!1 _!2 (vp-to-participle! _+3))))
+
+(defparameter *participle-for-mod-n*
+  '(/ (mod-n (!1 verb?))
+      (mod-n (vp-to-participle! !1))))
+(defparameter *participle-for-implicit-mod-n*
+  '(/ ((!1 verb?) (!2 noun?))
+      ((vp-to-participle! !1) !2)))
+(defparameter *participle-for-adv-a*
+  '(/ (adv-a (!1 verb?))
+      (adv-a (vp-to-participle! !1))))
+
+(defparameter *prog2surface*
+  '(/ (prog (!1 verb?))
+      (be.v (vp-to-present-participle! !1))))
+(defparameter *tensed-prog2surface*
+  '(/ (((!1 tense?) prog) (!2 verb?))
+      ((!1 be.v) (vp-to-present-participle! !2))))
+(defparameter *perf2surface*
+  '(/ (perf (!1 verb?))
+      (have.v (vp-to-past-participle! !1))))
+(defparameter *tensed-perf2surface*
+  '(/ (((!1 tense?) perf) (!2 verb?))
+      ((!1 have.v) (vp-to-past-participle! !2))))
 
 (defun add-morphology (ulf)
-  (ttt:apply-rules (list *pasv-to-surface*
-                         *plur-to-surface*
-                         *tense-to-surface*
-                         *pres-part-for-post-modifying-verbs*)
-                   ulf :max-n 500
-                   :rule-order :slow-forward))
+  (ttt:apply-rules
+    (list
+      ;; NB: THE ORDER HERE MATTERS
+      ;; - Many later stages rely on perf and prog having already been
+      ;;   processed.
+      ;; - Some rules apply to the same stuff, but the more specific ones
+      ;;   are done first.
+
+      ;; Initial interactive changes.
+      *prog2surface*
+      *tensed-prog2surface*
+      *perf2surface*
+      *tensed-perf2surface*
+
+      ;; Various participles
+      *participle-for-post-modifying-verbs*
+      *participle-for-adv-a*
+      *participle-for-mod-n*
+      *participle-for-implicit-mod-n*
+      ;; Core non-interactive pieces.
+      *pasv2surface*
+      *plur2surface*
+      *tense2surface*)
+    ulf :max-n 500
+    :rule-order :slow-forward))
 
 (defun capitalize-first (string)
   (if (zerop (length string))
@@ -291,18 +383,18 @@
 
 ;; Input: a list of tokens.
 ;; Output: tokens with certain determiner-"thing"/"one" combinations merged.
-;; 
+;;
 ;; Ex. "any" "one" -> "anyone"
 ;;     "every" "thing" -> "everything"
 (defun merge-det-thing-combos (tokens)
-  (cond 
+  (cond
     ((null tokens) nil)
     (t (let* ((rec (merge-det-thing-combos (cdr tokens)))
               (cur (car tokens))
               (toprec (car rec)))
-         (if (and (member (string-downcase cur) '("any" "no" "every") 
+         (if (and (member (string-downcase cur) '("any" "no" "every")
                           :test #'equal)
-                  (member (string-downcase toprec) '("one" "thing") 
+                  (member (string-downcase toprec) '("one" "thing")
                           :test #'equal))
            ;; If the pattern matches, merge the strings.
            (cons (cl-strings:join (list cur toprec)) (cdr rec))
@@ -322,7 +414,7 @@
 
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
-(defun ulf2english (ulf)
+(defun ulf2english (ulf &key (add-punct? t) (capitalize-front? t))
   ;; TODO: make more sophisticated version (tenses, quotes, perfect, passive, prog, etc.).
 
   ;; For now just drop all special operators and just take the suffixed tokens.
@@ -331,7 +423,8 @@
   ;; TODO: just have a canonicalization function for introducing implicit
   ;; suffixes and another canonicalization function for identifying words that
   ;; appear in the surface form.
-  (let* ((punct (extract-punctuation ulf))
+  (let* ((idfn #'(lambda (x) x))
+         (punct (extract-punctuation ulf))
          (add-punct-fn (add-punct-curried punct))
         staged)
     (setq staged (reduce #'(lambda (acc new)
@@ -342,5 +435,8 @@
                                  (format t "~a: ~s~%" desc res))
                                res))
                          *ulf2english-stages* :initial-value ulf))
-    (funcall (compose add-punct-fn #'capitalize-first) staged)))
+    (funcall (compose
+               (if add-punct? add-punct-fn idfn)
+               (if capitalize-front? #'capitalize-first idfn))
+             staged)))
 
