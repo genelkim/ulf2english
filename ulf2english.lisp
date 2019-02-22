@@ -18,6 +18,7 @@
         (cl-strings:replace-all (string-downcase sstr) "-" " ")
         "_" " "))))
 
+
 ;; TODO: probably put a version of thi in ulf-lib.
 ;; Returns t if 'token' is an atomic ULF element that has a corresponding token
 ;; in the surface string and return nil otherwise.  e.g.,
@@ -272,15 +273,18 @@
   '(/ ((!1 n+preds np+preds n+post) _!2 _+3)
       (!1 _!2 (vp-to-participle! _+3))))
 
-(defparameter *participle-for-mod-n*
-  '(/ (mod-n (!1 verb?))
-      (mod-n (vp-to-participle! !1))))
-(defparameter *participle-for-implicit-mod-n*
-  '(/ ((!1 verb?) (!2 noun?))
+(defparameter *participle-for-mod-x*
+  '(/ ((!1 mod-n mod-a) (!2 verb?))
+      (!1 (vp-to-participle! !2))))
+(defparameter *participle-for-implicit-mod-x*
+  '(/ ((!1 verb?) (!2 noun? adj?))
       ((vp-to-participle! !1) !2)))
 (defparameter *participle-for-adv-a*
   '(/ (adv-a (!1 verb?))
       (adv-a (vp-to-participle! !1))))
+(defparameter *pres-part-for-ka*
+  '(/ (ka (!1 verb?))
+      (vp-to-present-participle! !1)))
 
 ;; Functions to help with writing TTT rules on prog and perf since they have
 ;; tensed variants.
@@ -335,8 +339,9 @@
       ;; Various participles
       *participle-for-post-modifying-verbs*
       *participle-for-adv-a*
-      *participle-for-mod-n*
-      *participle-for-implicit-mod-n*
+      *participle-for-mod-x*
+      *participle-for-implicit-mod-x*
+      *pres-part-for-ka*
       ;; Core non-interactive pieces.
       *pasv2surface*
       *plur2surface*
