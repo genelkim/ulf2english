@@ -30,7 +30,9 @@
 ;;   perf -> t
 ;;   {man}.n -> nil
 (defun is-surface-token? (token)
-  (or (and (ulf:has-suffix? token) (not (ulf:lex-elided? token)))
+  (or (and (ulf:has-suffix? token)
+           (not (ulf:lex-elided? token))
+           (not (ulf:lex-hole-variable? token)))
       (ulf:is-strict-name? token)
       (member token'(that not and or to))))
 
@@ -387,6 +389,17 @@
        (*2 phrasal-sent-op?))
       ((conjugate-head-verb! !1 !2) there.pro *1 !2 *2)))
 
+;(defparameter *inv-simple-sub-tense-n-number2surface*
+;  '(/ (sub (!1 pred?)
+;           (*1 phrasal-sent-op?)
+;           ((!2 be.v (lex-tense? be.v))
+;            (*2 phrasal-sent-op?)
+;            (!3 term?)
+;            (*3 phrasal-sent-op?)
+;            [*h]))
+;      (sub !1 *1 ((conjugate-head-verb! !2 !3)
+;                  *2 !3 *3 [*h]))))
+;
 
 (defun conjugate-head-verb! (vp subj)
 ;``````````````````````````
@@ -407,7 +420,7 @@
                   (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num)
                   (pattern-en-conjugate (string word) :number num)))
               ;suffix))
-              ; NB: special suffix so we don't recurse...
+              ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
               'specialv))
       (replace-head-verb vp conjugated))))
 
@@ -470,36 +483,38 @@
 
 
 (defun add-morphology (ulf)
-  (ttt:apply-rules
-    (list
-      ;; NB: THE ORDER HERE MATTERS
-      ;; - Many later stages rely on perf and prog having already been
-      ;;   processed.
-      ;; - Some rules apply to the same stuff, but the more specific ones
-      ;;   are done first.
+  (util:unhide-ttt-ops
+    (ttt:apply-rules
+      (list
+        ;; NB: THE ORDER HERE MATTERS
+        ;; - Many later stages rely on perf and prog having already been
+        ;;   processed.
+        ;; - Some rules apply to the same stuff, but the more specific ones
+        ;;   are done first.
 
-      ;; Initial interactive changes.
-      *prog2surface*
-      *inv-prog2surface*
-      *perf2surface*
-      *inv-perf2surface*
-      ;; Various participles
-      *participle-for-post-modifying-verbs*
-      *participle-for-adv-a*
-      *participle-for-mod-x*
-      *participle-for-implicit-mod-x*
-      *pres-part-for-ka*
-      ;; Core non-interactive pieces.
-      *pasv2surface*
-      *tense-n-number2surface*
-      *inv-tense-n-number2surface*
-      *exist-there-tense-n-number2surface*
-      *inv-exist-there-tense-n-number2surface*
-      ; NB: comment below when testing tense-n-number2surface, but uncomment during use.
-      ;*tense2surface* ; default tense if above didn't work.
-      *plur2surface*)
-    ulf :max-n 1000
-    :rule-order :slow-forward))
+        ;; Initial interactive changes.
+        *prog2surface*
+        *inv-prog2surface*
+        *perf2surface*
+        *inv-perf2surface*
+        ;; Various participles
+        *participle-for-post-modifying-verbs*
+        *participle-for-adv-a*
+        *participle-for-mod-x*
+        *participle-for-implicit-mod-x*
+        *pres-part-for-ka*
+        ;; Core non-interactive pieces.
+        *pasv2surface*
+        *tense-n-number2surface*
+        *inv-tense-n-number2surface*
+        *exist-there-tense-n-number2surface*
+        *inv-exist-there-tense-n-number2surface*
+        ;*inv-simple-sub-tense-n-number2surface*
+        ; NB: comment below when testing tense-n-number2surface, but uncomment during use.
+        ;*tense2surface* ; default tense if above didn't work.
+        *plur2surface*)
+      (util:hide-ttt-ops ulf) :max-n 1000
+      :rule-order :slow-forward)))
 
 (defun capitalize-first (string)
   (if (zerop (length string))
@@ -588,7 +603,10 @@
 
 
 (defparameter *ulf2english-stages*
-  '((contextual-preprocess "Contextual preprocess")
+  '(;; TODO: generalize this function to adding types to all the hole variables.
+    ((lambda (x) (ulf:add-types-to-sub-vars x :calling-package :ulf2english))
+     "Add types to 'sub' variables")
+    (contextual-preprocess "Contextual preprocess")
     (add-morphology "Adding morphology")
     ((lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
