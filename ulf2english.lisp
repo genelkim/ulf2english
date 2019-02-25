@@ -11,12 +11,13 @@
 ;; Otherwise, the string is made lowercase.
 (defun post-format-ulf-string (s)
   (let ((sstr (if (symbolp s) (util:sym2str s) s)))
-    (if (ulf:is-strict-name? sstr)
-      (coerce (subseq (coerce sstr 'list) 1 (1- (length sstr)))
-              'string)
-      (cl-strings:replace-all
-        (cl-strings:replace-all (string-downcase sstr) "-" " ")
-        "_" " "))))
+    (util:trim
+      (if (ulf:is-strict-name? sstr)
+        (coerce (subseq (coerce sstr 'list) 1 (1- (length sstr)))
+                'string)
+        (cl-strings:replace-all
+          (cl-strings:replace-all (string-downcase sstr) "-" " ")
+          "_" " ")))))
 
 
 ;; TODO: probably put a version of thi in ulf-lib.
