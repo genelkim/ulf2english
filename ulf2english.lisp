@@ -383,10 +383,11 @@
 (defparameter *inv-tense-n-number2surface*
   '(/ ((!1 be.v have.v (lex-tense? be.v) (lex-tense? have.v)
            aux? (lex-tense? aux?))
-       (!2 term?) (!3 pred?))
-      ((conjugate-vp-head! !1 !2) !2 !3)))
-;     ((!1 ulf:lex-tense?) _!2)
-;      (add-tense! (!1 _!2))))
+       (*1 phrasal-sent-op?)
+       (!2 term?)
+       (*2 phrasal-sent-op?)
+       (!3 pred?))
+      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3)))
 (defparameter *exist-there-tense-n-number2surface*
   '(/ (there.pro ((!1 lex-verb? (lex-tense? lex-verb?))
                   (*1 phrasal-sent-op?)
@@ -400,6 +401,16 @@
        (!2 term?)
        (*2 phrasal-sent-op?))
       ((conjugate-vp-head! !1 !2) there.pro *1 !2 *2)))
+
+;; This is dealing with the over simplification of "what is/are" questions.
+;; Normally they should be inverted, but we allow them not to be so.
+(defparameter *simple-what-is-tense-n-number2surface*
+  '(/ (what.pro
+       (*1 phrasal-sent-op?)
+       ((!1 be.v (lex-tense? be.v))
+        (*2 phrasal-sent-op?)
+        (= (!2 term?))))
+      (what.pro *1 ((conjugate-vp-head! !1 !2) *2 (= !2)))))
 
 ;(defparameter *inv-simple-sub-tense-n-number2surface*
 ;  '(/ (sub (!1 pred?)
@@ -420,10 +431,6 @@
 ; Assumes there's no passive operator on the verb, since this should be appled
 ; after (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb>
 ; ..))
-
-  (princln "conjugate-vp-head!")
-  (princln vp)
-  (princln subj)
   (let ((num (if (plural-term? subj) 'PL 'SG))
         (hv (find-vp-head vp))
         tense conjugated lex-verb)
@@ -522,6 +529,7 @@
         *pres-part-for-ka*
         ;; Core non-interactive pieces.
         *pasv2surface*
+        *simple-what-is-tense-n-number2surface*
         *tense-n-number2surface*
         *inv-tense-n-number2surface*
         *exist-there-tense-n-number2surface*
