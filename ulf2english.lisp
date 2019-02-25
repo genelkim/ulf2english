@@ -75,6 +75,29 @@
            (t (intern (pattern-en-pluralize (string word) :preserve-case nil))))
          suffix)))))
 
+(defvar *superlative-special-case-alist*
+  '((left.a . leftmost.a)
+    (right.a . rightmost.a)
+    (upper.a . uppermost.a)
+    (lower.a . lowermost.a)))
+
+(defun superlative! (ulf)
+;````````````````````````
+; Converts the given adjective to superlative form.
+;   'bad.a -> 'worst.a
+;   'left.a -> 'leftmost.a
+  (cond
+    ((assoc ulf *superlative-special-case-alist*)
+     (cdr (assoc ulf *superlative-special-case-alist*)))
+    ((lex-adjective? ulf)
+     (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
+       (ulf:add-suffix
+         (intern (pattern-en-superlative (string-downcase (string word))))
+         suffix)))
+    ;; Not something that can be turned superlative so just return.
+    (t ulf)))
+
+
 (defun add-tense! (ulf)
 ;``````````````````````
 ; Converts the given ULF to the tensed surface form if the input is of the form
@@ -424,6 +447,11 @@
 ;                  *2 !3 *3 [*h]))))
 ;
 
+(defparameter *most-n-morph*
+  '(/ (most-n (!1 lex-adjective?) (!2 noun?))
+      ((superlative! !1) !2)))
+
+
 (defun conjugate-vp-head! (vp subj)
 ;``````````````````````````
 ; Conjugates the head of vp according to the tense attached to it and the
@@ -537,7 +565,8 @@
         ;*inv-simple-sub-tense-n-number2surface*
         ; NB: comment below when testing tense-n-number2surface, but uncomment during use.
         ;*tense2surface* ; default tense if above didn't work.
-        *plur2surface*)
+        *plur2surface*
+        *most-n-morph*)
       (util:hide-ttt-ops ulf) :max-n 1000
       :rule-order :slow-forward)))
 

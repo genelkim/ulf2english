@@ -84,7 +84,7 @@
 (gen-blocks-qa-test bwqa-gk7
   (:gene-bwqa)
   "Does the tallest stack have a red block on top?"
-  '(((pres do.aux-s) (the.d ((most tall.a) stack.n))
+  '(((pres do.aux-s) (the.d (most-n tall.a stack.n))
      (have.v (a.d (red.a block.n)) (on.p ({the}.d (top-of.n *ref))))) ?))
 (gen-blocks-qa-test bwqa-gk8
   (:gene-bwqa)
@@ -223,7 +223,7 @@
   (:gene-bwqa)
   "What blocks are in the longest row?"
   '(((what.d (plur block.n))
-     ((pres be.v) (in.p (the.d ((most long.a) row.n))))) ?))
+     ((pres be.v) (in.p (the.d (most-n long.a row.n))))) ?))
 (gen-blocks-qa-test bwqa-gk31
   (:gene-bwqa)
   "What block is halfway on top of any other block?"
@@ -241,8 +241,8 @@
   (:gene-bwqa)
   "What is the farthest block from the center of the table?"
   '((what.pro ((pres be.v)
-               (the.d (rep (((most far.a) *p) block.n)
-                           (from.p (the.d (center-of.n (the.d table.n)))))))) ?))
+               (the.d (rep ((most (far.a *p)) block.n)
+                           (mod-a (from.p (the.d (center-of.n (the.d table.n))))))))) ?))
 (gen-blocks-qa-test bwqa-gk34
   (:gene-bwqa)
   "Which block the Nvidia block is on top of?"
@@ -267,7 +267,7 @@
   '(((which.d (red.a block.n))
      ((pres be.v)
       (the.d (n+preds ({red}.a {block}.n)
-                      ((most close.a) (mod-a (to.p (the.d (| Toyota| block.n))))))))) ?))
+                      (most (close.a (mod-a (to.p (the.d (| Toyota| block.n)))))))))) ?))
 (gen-blocks-qa-test bwqa-gk38
   (:gene-bwqa)
   "Which red blocks are directly on the table?"
@@ -293,7 +293,7 @@
   (:gene-bwqa)
   "Where is the leftmost red block?"
   '((sub where.a
-         ((pres be.v) (the.d ((most left.a) (red.a block.n))) *h)) ?))
+         ((pres be.v) (the.d (most-n left.a (red.a block.n))) *h)) ?))
 (gen-blocks-qa-test bwqa-gk43
   (:gene-bwqa)
   "Where is any clear block?"
@@ -303,12 +303,12 @@
   (:gene-bwqa)
   "Where is the shortest stack?"
   '((sub where.a
-         ((pres be.v) (the.d ((most short.a) stack.n)) *h)) ?))
+         ((pres be.v) (the.d (most-n short.a stack.n)) *h)) ?))
 (gen-blocks-qa-test bwqa-gk45
   (:gene-bwqa)
   "Where is the highest block?"
   '((sub where.a
-         ((pres be.v) (the.d ((most high.a) block.n)) *h)) ?))
+         ((pres be.v) (the.d (most-n high.a block.n)) *h)) ?))
 
 ;;
 ;; Viet
@@ -388,7 +388,7 @@
   (:viet-bwqa)
   "Is there a shortest stack on the table?"
   '(((pres be.v) there.pro
-      (a.d (n+preds ((most short.a) stack.n)
+      (a.d (n+preds (most-n short.a stack.n)
                   (on.p (the.d table.n))))) ?))
 
 (gen-blocks-qa-test bwqa-v8
@@ -465,7 +465,7 @@
         (((pres be.v)
           (the.d (n+preds block.n
                           (that.rel ((pres be.v)
-                                     (near.p (the.d ((most left.a) (red.a block.n))))))))
+                                     (near.p (the.d (most-n left.a (red.a block.n))))))))
           *h) ?)))
 
 (gen-blocks-qa-test bwqa-v18
@@ -498,12 +498,12 @@
 (gen-blocks-qa-test bwqa-v21
   (:viet-bwqa)
   "What is the height of the leftmost stack?"
-  '((what.pro ((pres be.v) (= (the.d (height-of.n (the.d ((most left.a) stack.n))))))) ?))
+  '((what.pro ((pres be.v) (= (the.d (height-of.n (the.d (most-n left.a stack.n))))))) ?))
 
 (gen-blocks-qa-test bwqa-v22
   (:viet-bwqa)
   "What is the length of the longest row?"
-  '((what.pro ((pres be.v) (= (the.d (length-of.n (the.d ((most long.a) row.n))))))) ?))
+  '((what.pro ((pres be.v) (= (the.d (length-of.n (the.d (most-n long.a row.n))))))) ?))
 
 (gen-blocks-qa-test bwqa-v23
   (:viet-bwqa)
@@ -517,7 +517,7 @@
   '(sub (what.mod-n color.n)
         (((pres be.v)
           (the.d (n+preds (middle.a block.n)
-                          (in.p (the.d ((most long.a) row.n)))))
+                          (in.p (the.d (most-n long.a row.n)))))
           *h) ?)))
 
 (gen-blocks-qa-test bwqa-v25
@@ -535,8 +535,8 @@
   "What color is the lowest block of the shortest stack?"
   '(sub (what.mod-n color.n)
         (((pres be.v)
-          (the.d (n+preds ((most low.a) block.n)
-                          (of.p (the.d ((most short.a) stack.n))))))
+          (the.d (n+preds (most-n low.a block.n)
+                          (of.p (the.d (most-n short.a stack.n))))))
          *h) ?))
 
 (gen-blocks-qa-test bwqa-v27
@@ -545,7 +545,7 @@
   '(sub (what.mod-n color.n)
         (((pres be.v)
           (the.d (n+preds (last.a block.n)
-                          (in.p (the.d ((most left.a) row.n)))))
+                          (in.p (the.d (most-n left.a row.n)))))
           *h) ?)))
 
 
