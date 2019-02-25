@@ -10,7 +10,7 @@
 
 ;; Macro for defining tests with less writing.
 (defmacro gen-blocks-qa-test (name tags sentence ulf)
-  `(define-test ,name 
+  `(define-test ,name
       ,(format nil "Blocks world QA sentence: '~a'" sentence)
       (:tag :blocks-world-qa ,@tags)
       (let ((ulf ,ulf)
@@ -53,34 +53,34 @@
 (gen-blocks-qa-test bwqa-gk1
   (:gene-bwqa)
   "Is the Nvidia block to the left of the Texaco block?"
-  '(((pres be.v) (the.d (|Nvidia| block.n)) 
-     (to.p (the.d (left-of.n (the.d |Texaco| block.n))))) ?))
+  '(((pres be.v) (the.d (| Nvidia| block.n))
+     (to.p (the.d (left-of.n (the.d | Texaco| block.n))))) ?))
 (gen-blocks-qa-test bwqa-gk2
   (:gene-bwqa)
   "Is the McDonalds block on top of the SRI block?"
-  '(((pres be.v) (the.d (|McDonalds| block.n))
-     (on.p ({the}.d (top-of.n (the.d (|SRI| block.n)))))) ?))
+  '(((pres be.v) (the.d (| McDonalds| block.n))
+     (on.p ({the}.d (top-of.n (the.d (| SRI| block.n)))))) ?))
 (gen-blocks-qa-test bwqa-gk3
   (:gene-bwqa)
   "Is the Starbucks block near the Toyota block?"
-  '(((pres be.v) (the.d (|Starbucks| block.n))
-     (near.p (the.d (|Toyota| block.n)))) ?))
+  '(((pres be.v) (the.d (| Starbucks| block.n))
+     (near.p (the.d (| Toyota| block.n)))) ?))
 (gen-blocks-qa-test bwqa-gk4
   (:gene-bwqa)
   "Is the Toyota block between the Nvidia block and the Target block?"
-  '(((pres be.v) (the.d (|Toyota| block.n))
-     (between.p ((the.d (|Nvidia| block.n)) and.cc 
-                 (the.d (|Target| block.n))))) ?))
+  '(((pres be.v) (the.d (| Toyota| block.n))
+     (between.p ((the.d (| Nvidia| block.n)) and.cc
+                 (the.d (| Target| block.n))))) ?))
 (gen-blocks-qa-test bwqa-gk5
   (:gene-bwqa)
   "Is the SRI block fully on top of any red block?"
-  '(((pres be.v) (the.d (|SRI| block.n))
+  '(((pres be.v) (the.d (| SRI| block.n))
      (fully.mod-a (on.p ({the}.d (top-of.n (any.d (red.a block.n))))))) ?))
 (gen-blocks-qa-test bwqa-gk6
   (:gene-bwqa)
   "Does the Toyota block face the Nvidia block?"
-  '(((pres do.aux-s) (the.d (|Toyota| block.n))
-     (face.v (the.d (|Nvidia| block.n)))) ?))
+  '(((pres do.aux-s) (the.d (| Toyota| block.n))
+     (face.v (the.d (| Nvidia| block.n)))) ?))
 (gen-blocks-qa-test bwqa-gk7
   (:gene-bwqa)
   "Does the tallest stack have a red block on top?"
@@ -89,12 +89,12 @@
 (gen-blocks-qa-test bwqa-gk8
   (:gene-bwqa)
   "Is the Toyota block a part of some stack?"
-  '(((pres be.v) (the.d (|Toyota| block.n))
+  '(((pres be.v) (the.d (| Toyota| block.n))
      (= (a.d (part-of.n (some.d stack.n))))) ?))
 (gen-blocks-qa-test bwqa-gk9
   (:gene-bwqa)
   "Is the Target block a part of some row?"
-  '(((pres be.v) (the.d (|Target| block.n))
+  '(((pres be.v) (the.d (| Target| block.n))
      (= (a.d (part-of.n (some.d row.n))))) ?))
 (gen-blocks-qa-test bwqa-gk10
   (:gene-bwqa)
@@ -104,7 +104,7 @@
 (gen-blocks-qa-test bwqa-gk11
   (:gene-bwqa)
   "Are any two green blocks touching?"
-  '(((pres prog) (any.d (two.a (green.a (plur block.n)))) 
+  '(((pres prog) (any.d (two.a (green.a (plur block.n))))
      touch.v) ?))
 (gen-blocks-qa-test bwqa-gk12
   (:gene-bwqa)
@@ -114,34 +114,34 @@
 (gen-blocks-qa-test bwqa-gk13
   (:gene-bwqa)
   "Does the SRI block have anything on it?"
-  '(((pres do.aux-s) (the.d (|SRI| block.n))
+  '(((pres do.aux-s) (the.d (| SRI| block.n))
      (have.v anything.pro (on.p it.pro))) ?))
-    ;; TODO: update the formula below once we finalize how to deal with this "blocks" 
+    ;; TODO: update the formula below once we finalize how to deal with this "blocks"
 (gen-blocks-qa-test bwqa-gk14
   (:gene-bwqa)
   "Are the Nvidia and the SRI blocks in the same stack?"
-  '(((pres be.v) (the.d ((|Nvidia| and.cc |SRI|) (plur block.n)))
+  '(((pres be.v) (the.d ((| Nvidia| and.cc | SRI|) (plur block.n)))
      (in.p (the.d (same.a stack.n)))) ?))
 (gen-blocks-qa-test bwqa-gk15
   (:gene-bwqa)
   "Is the Toyota block below the Texaco block?"
-  '(((pres be.v) (the.d (|Toyota| block.n))
-     (below.p (the.d (|Texaco| block.n)))) ?))
+  '(((pres be.v) (the.d (| Toyota| block.n))
+     (below.p (the.d (| Texaco| block.n)))) ?))
 (gen-blocks-qa-test bwqa-gk16
   (:gene-bwqa)
   "Is the Starbucks block on top of any row?"
-  '(((pres be.v) (the.d (|Starbucks| block.n))
+  '(((pres be.v) (the.d (| Starbucks| block.n))
      (on.p ({the}.d (top-of.n (any.d row.n))))) ?))
     ;; TODO: the formula below doesn't seem right since two separate 'plur'
     ;; operators seems to preclude having one Nvidia and one McDonalds block
 (gen-blocks-qa-test bwqa-gk17
   (:gene-bwqa)
-  "Are the Nvidia and the McDonalds blocks side by side?" 
-  '(((pres be.v) ((the.d (|Nvidia| (plur {block}.n))) and.cc
-                  (the.d (|McDonalds| (plur block.n))))
-     side_by_side.a) ?)) 
-    ;; side_by_side.a 
-    ;; == (lambda x (all y [y (member-of.n x)] 
+  "Are the Nvidia and the McDonalds blocks side by side?"
+  '(((pres be.v) ((the.d (| Nvidia| (plur {block}.n))) and.cc
+                  (the.d (| McDonalds| (plur block.n))))
+     side_by_side.a) ?))
+    ;; side_by_side.a
+    ;; == (lambda x (all y [y (member-of.n x)]
     ;;            (exists z [[z (member-of.n x)] ^ (not [z = y])]
     ;;              (exists a [a (side-of.n y)]
     ;;                (exists b [b (side-of.n z)]
@@ -151,7 +151,7 @@
   (:gene-bwqa)
   "Are all the red blocks near the Nvidia block?"
   '(((pres be.v) (all.d ({of}.p (the.d (red.a (plur block.n)))))
-     (near.p (the.d (|Nvidia| block.n)))) ?))
+     (near.p (the.d (| Nvidia| block.n)))) ?))
 (gen-blocks-qa-test bwqa-gk19
   (:gene-bwqa)
   "Is every blue block behind some other block?"
@@ -160,28 +160,28 @@
 (gen-blocks-qa-test bwqa-gk20
   (:gene-bwqa)
   "Is the Texaco block between any two blocks?"
-  '(((pres be.v) (the.d (|Texaco| block.n))
+  '(((pres be.v) (the.d (| Texaco| block.n))
      (between.p (any.d (two.a (plur block.n))))) ?))
 (gen-blocks-qa-test bwqa-gk21
   (:gene-bwqa)
   "Is the Target block slightly to the left of some red block?"
-  '(((pres be.v) (the.d (|Target| block.n))
-     (slightly.mod-a 
+  '(((pres be.v) (the.d (| Target| block.n))
+     (slightly.mod-a
       (to.p (the.d (left-of.n (some.d (red.a block.n))))))) ?))
 (gen-blocks-qa-test bwqa-gk22
-    ;; TODO: update the formula below once we finalize how to deal with this "blocks" 
+    ;; TODO: update the formula below once we finalize how to deal with this "blocks"
   (:gene-bwqa)
   "Is there a block between the McDonalds and the SRI blocks?"
-  '(((pres be.v) there.pro 
+  '(((pres be.v) there.pro
      (a.d (n+preds block.n
-                   (between.p ((the.d (|McDonalds| (plur {block}.n))) and.cc
-                               (the.d (|SRI| (plur block.n)))))))) ?))
+                   (between.p ((the.d (| McDonalds| (plur {block}.n))) and.cc
+                               (the.d (| SRI| (plur block.n)))))))) ?))
 (gen-blocks-qa-test bwqa-gk23
   (:gene-bwqa)
   "Is there a block near the Target block?"
-  '(((pres be.v) there.pro 
+  '(((pres be.v) there.pro
      (a.d (n+preds block.n
-                   (near.p (the.d (|Target| block.n)))))) ?))
+                   (near.p (the.d (| Target| block.n)))))) ?))
 (gen-blocks-qa-test bwqa-gk24
   (:gene-bwqa)
   "Is there a red block near a blue block?"
@@ -193,13 +193,13 @@
   "Is there a block touching the Nvidia block?"
   '(((pres be.v) there.pro
      (a.d (n+preds block.n
-                   (touch.v (the.d (|Nvidia| block.n)))))) ?))
+                   (touch.v (the.d (| Nvidia| block.n)))))) ?))
 (gen-blocks-qa-test bwqa-gk26
   (:gene-bwqa)
   "Is there anything at the front left corner of the table?"
   '(((pres be.v) there.pro
      (any.d (n+preds thing.n
-                     (at.p (the.d (front.a (left.a 
+                     (at.p (the.d (front.a (left.a
                              (corner-of.n (the.d table.n))))))))) ?))
 (gen-blocks-qa-test bwqa-gk27
   (:gene-bwqa)
@@ -212,7 +212,7 @@
 (gen-blocks-qa-test bwqa-gk28
   (:gene-bwqa)
   "Which block is on two other blocks?"
-  '(((which.d block.n) 
+  '(((which.d block.n)
      ((pres be.v) (on.p (two.d (other.a (plur block.n)))))) ?))
 (gen-blocks-qa-test bwqa-gk29
   (:gene-bwqa)
@@ -222,39 +222,39 @@
 (gen-blocks-qa-test bwqa-gk30
   (:gene-bwqa)
   "What blocks are in the longest row?"
-  '(((what.d (plur block.n)) 
+  '(((what.d (plur block.n))
      ((pres be.v) (in.p (the.d ((most long.a) row.n))))) ?))
 (gen-blocks-qa-test bwqa-gk31
   (:gene-bwqa)
   "What block is halfway on top of any other block?"
   '(((what.d block.n)
-     ((pres be.v) 
-      ((mod-a halfway.a) 
+     ((pres be.v)
+      ((mod-a halfway.a)
        (on.p ({the}.d (top-of.n (any.d (other.a block.n)))))))) ?))
 (gen-blocks-qa-test bwqa-gk32
   (:gene-bwqa)
   "Which block is side by side with the Texaco block?"
   '(((which.d block.n)
-     ((pres be.v) 
-      (side_by_side.a (with.p-arg (the.d (|Texaco| block.n)))))) ?))
+     ((pres be.v)
+      (side_by_side.a (with.p-arg (the.d (| Texaco| block.n)))))) ?))
 (gen-blocks-qa-test bwqa-gk33
   (:gene-bwqa)
   "What is the farthest block from the center of the table?"
-  '((what.pro ((pres be.v) 
-               (the.d (rep (((most far.a) *p) block.n) 
+  '((what.pro ((pres be.v)
+               (the.d (rep (((most far.a) *p) block.n)
                            (from.p (the.d (center-of.n (the.d table.n)))))))) ?))
 (gen-blocks-qa-test bwqa-gk34
   (:gene-bwqa)
   "Which block the Nvidia block is on top of?"
-  '((sub (which.d block.n) 
-         ((the.d (|Nvidia| block.n)) 
+  '((sub (which.d block.n)
+         ((the.d (| Nvidia| block.n))
           ((pres be.v) (on.p ({the}.d (top-of.n *h)))))) ?))
 (gen-blocks-qa-test bwqa-gk35
   (:gene-bwqa)
   "Which block is very close to the front edge of the table?"
   '(((which.d block.n)
-     ((pres be.v) 
-      ((very.mod-a close.a) 
+     ((pres be.v)
+      ((very.mod-a close.a)
        (mod-a (to.p (the.d (front.n (edge-of.n (the.d table.n))))))))) ?))
 (gen-blocks-qa-test bwqa-gk36
   (:gene-bwqa)
@@ -265,9 +265,9 @@
   (:gene-bwqa)
   "Which red block is the closest to the Toyota block?"
   '(((which.d (red.a block.n))
-     ((pres be.v) 
-      (the.d (n+preds ({red}.a {block}.n) 
-                      ((most close.a) (mod-a (to.p (the.d (|Toyota| block.n))))))))) ?))
+     ((pres be.v)
+      (the.d (n+preds ({red}.a {block}.n)
+                      ((most close.a) (mod-a (to.p (the.d (| Toyota| block.n))))))))) ?))
 (gen-blocks-qa-test bwqa-gk38
   (:gene-bwqa)
   "Which red blocks are directly on the table?"
@@ -277,13 +277,13 @@
   (:gene-bwqa)
   "Which blue block the Nvidia block is not near to?"
   '((sub (which.d (blue.a block.n))
-         ((the.d (|Nvidia| block.n)) 
+         ((the.d (| Nvidia| block.n))
           ((pres be.v) not (near.a (mod-a (to.p *h)))))) ?))
 (gen-blocks-qa-test bwqa-gk40
   (:gene-bwqa)
   "Where is the Toyota block?"
   '((sub where.a
-         ((pres be.v) (the.d (|Toyota| block.n)) *h)) ?)) 
+         ((pres be.v) (the.d (| Toyota| block.n)) *h)) ?))
 (gen-blocks-qa-test bwqa-gk41
   (:gene-bwqa)
   "Where is some blue block?"
@@ -353,7 +353,7 @@
   (:viet-bwqa)
   "Is there a block facing the front edge of the table?"
   '(((pres be.v) there.pro
-      (a.d (n+preds block.n 
+      (a.d (n+preds block.n
                   (face.v (the.d (front.a (edge-of.n (the.d table.n)))))))) ?))
 
 (gen-blocks-qa-test bwqa-v3
@@ -395,14 +395,14 @@
   (:viet-bwqa)
   "Is there a block on the left side of the table?"
   '(((pres be.v) there.pro
-      (a.d (n+preds block.n 
+      (a.d (n+preds block.n
                   (on.p (the.d (left.a (side-of.n (the.d table.n)))))))) ?))
 
 (gen-blocks-qa-test bwqa-v9
   (:viet-bwqa)
   "Is there a block on the left side of the table?"
   '(((pres be.v) there.pro
-      (a.d (n+preds block.n 
+      (a.d (n+preds block.n
                   (on.p (the.d (left.a (side-of.n (the.d table.n)))))))) ?))
 
 (gen-blocks-qa-test bwqa-v10
@@ -410,15 +410,15 @@
   "Is there a block that is side by side with the Nvidia block?"
   '(((pres be.v) there.pro
      (a.d (n+preds block.n
-                  (that.rel ((pres be.v) (side_by_side.a 
-                                          (with.p-arg (the.d (|Nvidia| block.n))))))))) ?))
+                  (that.rel ((pres be.v) (side_by_side.a
+                                          (with.p-arg (the.d (| Nvidia| block.n))))))))) ?))
 
 (gen-blocks-qa-test bwqa-v11
   (:viet-bwqa)
   "Is there a block that is side by side with any red block?"
   '(((pres be.v) there.pro
      (a.d (n+preds block.n
-                  (that.rel ((pres be.v) (side_by_side.a 
+                  (that.rel ((pres be.v) (side_by_side.a
                                           (with.p-arg (any.d (red.a block.n))))))))) ?))
 
 (gen-blocks-qa-test bwqa-v12
@@ -452,17 +452,17 @@
 (gen-blocks-qa-test bwqa-v16
   (:viet-bwqa)
   "What color is the block to the left of the Nvidia block?"
-  '(sub (what.mod-n color.n) 
-         (((pres be.v) 
+  '(sub (what.mod-n color.n)
+         (((pres be.v)
            (the.d (n+preds block.n
-                           (to.p (the.d (left-of.n (the.d (|Nvidia| block.n)))))))
+                           (to.p (the.d (left-of.n (the.d (| Nvidia| block.n)))))))
            *h) ?)))
 
 (gen-blocks-qa-test bwqa-v17
   (:viet-bwqa)
   "What color is the block that is near the leftmost red block?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds block.n
                           (that.rel ((pres be.v)
                                      (near.p (the.d ((most left.a) (red.a block.n))))))))
@@ -471,17 +471,17 @@
 (gen-blocks-qa-test bwqa-v18
   (:viet-bwqa)
   "What color are the blocks near to the Toyota block?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds (plur block.n)
-                          (near.a (to.p-arg (the.d (|Toyota| block.n))))))
+                          (near.a (to.p-arg (the.d (| Toyota| block.n))))))
           *h) ?)))
 
 (gen-blocks-qa-test bwqa-v19
   (:viet-bwqa)
   "What color is the block close to the front edge of the table?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds block.n
                           (close.a (to.p-arg (the.d (front.a (edge-of.n (the.d table.n))))))))
           *h) ?)))
@@ -489,8 +489,8 @@
 (gen-blocks-qa-test bwqa-v20
   (:viet-bwqa)
   "What color are the blocks near any edge of the table?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds (plur block.n)
                           (near.p (any.d (edge-of.n (the.d table.n))))))
           *h) ?)))
@@ -508,14 +508,14 @@
 (gen-blocks-qa-test bwqa-v23
   (:viet-bwqa)
   "What direction is the Toyota block facing?"
-  '((sub (what.d direction.n) 
-         ((pres prog) (the.d (|Toyota| block.n)) (face.v *h))) ?))
+  '((sub (what.d direction.n)
+         ((pres prog) (the.d (| Toyota| block.n)) (face.v *h))) ?))
 
 (gen-blocks-qa-test bwqa-v24
   (:viet-bwqa)
   "What color is the middle block in the longest row?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds (middle.a block.n)
                           (in.p (the.d ((most long.a) row.n)))))
           *h) ?)))
@@ -523,18 +523,18 @@
 (gen-blocks-qa-test bwqa-v25
   (:viet-bwqa)
   "What colors are the blocks that are under some blue block?"
-  '(sub (what.mod-n (plur color.n)) 
-        (((pres be.v) 
+  '(sub (what.mod-n (plur color.n))
+        (((pres be.v)
           (the.d (n+preds (plur block.n)
                           (that.rel ((pres be.v)
                                      (under.p (some.d (blue.n block.n)))))))
           *h) ?)))
-                                                   
+
 (gen-blocks-qa-test bwqa-v26
   (:viet-bwqa)
   "What color is the lowest block of the shortest stack?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds ((most low.a) block.n)
                           (of.p (the.d ((most short.a) stack.n))))))
          *h) ?))
@@ -542,8 +542,8 @@
 (gen-blocks-qa-test bwqa-v27
   (:viet-bwqa)
   "What color is the last block in the leftmost row?"
-  '(sub (what.mod-n color.n) 
-        (((pres be.v) 
+  '(sub (what.mod-n color.n)
+        (((pres be.v)
           (the.d (n+preds (last.a block.n)
                           (in.p (the.d ((most left.a) row.n)))))
           *h) ?)))
@@ -597,7 +597,7 @@
 		    (:georgiy-bwqa)
 		    "How many blocks are facing any corner of the table?"
 		    '(((k ((How.mod-a many.a) (plur block.n)))
-		       ((pres be.v) (= (ka (face.v (any.d (n+preds corner.n (of.p (the.d table.n))))))))) ?))
+		       ((pres prog) (face.v (any.d (n+preds corner.n (of.p (the.d table.n))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp62
 		    (:georgiy-bwqa)
@@ -651,13 +651,13 @@
 		    (:georgiy-bwqa)
 		    "How many blocks are not touching the table?"
 		    '(((k ((How.mod-a many.a) (plur block.n)))
-		       ((pres be.v) not.adv-s (ka (touch.v (the.d table.n))))) ?))
+		       ((pres prog) not.adv-s (touch.v (the.d table.n)))) ?))
 
 (gen-blocks-qa-test bwqa-gp71
 		    (:georgiy-bwqa)
 		    "What are the blocks on top of the Toyota block?"
 		    '((What.pro
-		       ((pres be.v) (= (the.d (n+preds (plur block.n) (on.p (k (n+preds top.n (of.p (the.d (|Toyota|.n block.n))))))))))) ?))
+		       ((pres be.v) (= (the.d (n+preds (plur block.n) (on.p (k (n+preds top.n (of.p (the.d (| Toyota|.n block.n))))))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp72
 		    (:georgiy-bwqa)
@@ -674,7 +674,7 @@
 		    (:georgiy-bwqa)
 		    "What is the block between the Toyota and the SRI block?"
 		    '((What.pro
-		       ((pres be.v) (= (the.d (n+preds block.n (between.p ((the.d (|Toyota|.n {block}.n)) and.cc (the.d (|SRI|.n block.n))))))))) ?))
+		       ((pres be.v) (= (the.d (n+preds block.n (between.p ((the.d (| Toyota|.n {block}.n)) and.cc (the.d (| SRI|.n block.n))))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp75
 		    (:georgiy-bwqa)
@@ -697,7 +697,7 @@
 		    (:georgiy-bwqa)
 		    "What are the blocks behind the Nvidia block?"
 		    '((What.pro
-		       ((pres be.v) (= (the.d (n+preds (plur block.n) (behind.p (the.d (|Nvidia|.n block.n)))))))) ?))
+		       ((pres be.v) (= (the.d (n+preds (plur block.n) (behind.p (the.d (| Nvidia|.n block.n)))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp79
 		    (:georgiy-bwqa)
@@ -739,7 +739,7 @@
 		    (:georgiy-bwqa)
 		    "Which block is side by side with the Texaco block?"
 		    '(((Which.d block.n)
-		       ((pres be.v) (side-by-side.adv-a (with.p (the.d (|Texaco|.n block.n)))))) ?))
+		       ((pres be.v) (side-by-side.adv-a (with.p (the.d (| Texaco|.n block.n)))))) ?))
 
 ;;(gen-blocks-qa-test bwqa-gp86
 ;;  (:georgiy-bwqa)
@@ -749,7 +749,7 @@
 (gen-blocks-qa-test bwqa-gp87
 		    (:georgiy-bwqa)
 		    "Which block the Nvidia block is on top of?"
-		    '((sub (Which.d block.n) ((the.d (|Nvidia|.n block.n))
+		    '((sub (Which.d block.n) ((the.d (| Nvidia|.n block.n))
 					      ((pres be.v) (on.p (k (n+preds top.n (of.p *h))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp88
@@ -767,7 +767,7 @@
 ;;(gen-blocks-qa-test bwqa-gp90
 ;;		    (:georgiy-bwqa)
 ;;"Which red block is the closest to the Toyota block?"
-;;'(((Which.d (red.a block.n)) ((pres be.v) (the.d (most-pc close.a (to.p (the.d (|Toyota|.n block.n))))))) ?)
+;;'(((Which.d (red.a block.n)) ((pres be.v) (the.d (most-pc close.a (to.p (the.d (| Toyota|.n block.n))))))) ?)
 
 (gen-blocks-qa-test bwqa-gp91
 		    (:georgiy-bwqa)
