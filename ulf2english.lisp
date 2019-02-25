@@ -156,47 +156,58 @@
 ;  is.v -> being.v
   (verb-to-participle verb :part-type 'PRESENT))
 
-(defun search-head-verb (vp &key (sub nil))
+(defun marked-conjugated-vp-head? (x)
+  (or (and (symbolp x)
+           (multiple-value-bind (word suffix) (ulf:split-by-suffix x)
+             (eq suffix 'conjugated-vp-head)))
+      (and (listp x) (= 2 (length x))
+           (lex-tense? (first x)) (marked-conjugated-vp-head? (second x)))))
+
+(defun search-vp-head (vp &key (sub nil))
 ;``````````````````````
 ; TODO: move this to ulf-lib
-; Searches vp (a ULF VP) for the main verb. If sub is not nil, sub substitutes
-; for the main verb.
+; Searches vp (a ULF VP) for the head, which is either the main verb or
+; auxiliary/perf/prog acting over the VP. If sub is not nil, sub substitutes
+; for the vp head.
 ;
 ; Returns the following values in a list
-;   main verb
+;   vp head
 ;   whether is was found
 ;   new vp
 ; TODO: how does this relate to auxiliaries...?
   (cond
+    ;; Already marked conjguated VP head.
+    ((marked-conjugated-vp-head? vp)
+     (values vp t (if sub sub vp)))
     ;; Simple tensed or not, lexical or passivized verb.
-    ((ttt:match-expr '(!1 lex-verb? pasv-lex-verb?
-                          (ulf:lex-tense? (! lex-verb? pasv-lex-verb?)))
+    ((ttt:match-expr '(!1 lex-verbaux? pasv-lex-verb?
+                          (ulf:lex-tense? (! lex-verbaux? pasv-lex-verb?)))
                      vp)
      (values vp t (if sub sub vp)))
-    ;; Starts with a verb -- recurse into verb.
+    ;; Starts with a verb or auxiliary -- recurse into it.
     ((and (listp vp)
-          (or (verb? (car vp)) (tensed-verb? (car vp))))
-     (multiple-value-bind (hv found new-carvp) (search-head-verb (car vp) :sub sub)
+          (or (verb? (car vp)) (tensed-verb? (car vp)) (tensed-aux? (car vp))))
+     (multiple-value-bind (hv found new-carvp) (search-vp-head (car vp) :sub sub)
        (values hv found (cons new-carvp (cdr vp)))))
     ;; Starts with adv-a or phrasal sentence operator -- recurse into cdr.
     ((and (listp vp)
           (or (adv-a? (car vp)) (phrasal-sent-op? (car vp))))
-     (multiple-value-bind (hv found new-cdrvp) (search-head-verb (cdr vp) :sub sub)
+     (multiple-value-bind (hv found new-cdrvp) (search-vp-head (cdr vp) :sub sub)
        (values hv found (cons (car vp) new-cdrvp))))
     ;; Otherwise, it's not found.
     (t (values nil nil vp))))
 
 
-(defun find-head-verb (vp)
+(defun find-vp-head (vp)
 ;````````````````````
 ; Finds the main verb in a ULF VP.
-  (search-head-verb vp))
+  (search-vp-head vp))
 
 
-(defun replace-head-verb (vp sub)
+(defun replace-vp-head (vp sub)
 ;```````````````````````
 ; Find the main verb and returns a new VP with the substitute value.
-  (multiple-value-bind (_ _ newvp) (search-head-verb vp :sub sub)
+  (multiple-value-bind (_ _ newvp) (search-vp-head vp :sub sub)
     newvp))
 
 
@@ -321,7 +332,7 @@
   (assert (member part-type '(PRESENT PAST nil)))
   (cond
     ((verb? vp)
-     (let* ((head-verb (find-head-verb vp))
+     (let* ((head-verb (find-vp-head vp))
             (participle
               (cond
                 ;; Present participle condition.
@@ -342,7 +353,7 @@
                  (verb-to-past-participle! (second head-verb)))
                 (t (error "verb ~s is not a form that can become a past participle"
                           head-verb)))))
-       (replace-head-verb vp participle)))
+       (replace-vp-head vp participle)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
 
@@ -364,7 +375,7 @@
       (pasv2surface! (pasv _!))))
 (defparameter *tense-n-number2surface*
   '(/ ((!1 term?) (*1 phrasal-sent-op?) (!2 pred?))
-      (!1 *1 (conjugate-head-verb! !2 !1))))
+      (!1 *1 (conjugate-vp-head! !2 !1))))
 ;; TODO: complete
 ;; 1. add phrasal sent ops
 ;; 2. deal with auxiliaries
@@ -372,7 +383,7 @@
   '(/ ((!1 be.v have.v (lex-tense? be.v) (lex-tense? have.v)
            aux? (lex-tense? aux?))
        (!2 term?) (!3 pred?))
-      ((conjugate-head-verb! !1 !2) !2 !3)))
+      ((conjugate-vp-head! !1 !2) !2 !3)))
 ;     ((!1 ulf:lex-tense?) _!2)
 ;      (add-tense! (!1 _!2))))
 (defparameter *exist-there-tense-n-number2surface*
@@ -380,14 +391,14 @@
                   (*1 phrasal-sent-op?)
                   (!2 term?)
                   (*2 phrasal-sent-op?)))
-      (there.pro ((conjugate-head-verb! !1 !2) *1 !2 *2))))
+      (there.pro ((conjugate-vp-head! !1 !2) *1 !2 *2))))
 (defparameter *inv-exist-there-tense-n-number2surface*
   '(/ ((!1 lex-verb? (lex-tense? lex-verb?))
        there.pro
        (*1 phrasal-sent-op?)
        (!2 term?)
        (*2 phrasal-sent-op?))
-      ((conjugate-head-verb! !1 !2) there.pro *1 !2 *2)))
+      ((conjugate-vp-head! !1 !2) there.pro *1 !2 *2)))
 
 ;(defparameter *inv-simple-sub-tense-n-number2surface*
 ;  '(/ (sub (!1 pred?)
@@ -397,20 +408,25 @@
 ;            (!3 term?)
 ;            (*3 phrasal-sent-op?)
 ;            [*h]))
-;      (sub !1 *1 ((conjugate-head-verb! !2 !3)
+;      (sub !1 *1 ((conjugate-vp-head! !2 !3)
 ;                  *2 !3 *3 [*h]))))
 ;
 
-(defun conjugate-head-verb! (vp subj)
+(defun conjugate-vp-head! (vp subj)
 ;``````````````````````````
-; Conjugates the main verb of vp according to the tense attached to it and the
+; Conjugates the head of vp according to the tense attached to it and the
 ; number of the subject.
-; Assumes there's no passive operator on the verb, since this should be appled after
-; (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb> ..))
+; Assumes there's no passive operator on the verb, since this should be appled
+; after (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb>
+; ..))
+
+  (princln "conjugate-vp-head!")
+  (princln vp)
+  (princln subj)
   (let ((num (if (plural-term? subj) 'PL 'SG))
-        (hv (find-head-verb vp))
+        (hv (find-vp-head vp))
         tense conjugated lex-verb)
-    (setq tense (if (tensed-verb? hv) (first hv) nil))
+    (setq tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
     (setq lex-verb (if tense (second hv) hv))
     (multiple-value-bind (word suffix) (split-by-suffix lex-verb)
       (setq conjugated
@@ -421,8 +437,8 @@
                   (pattern-en-conjugate (string word) :number num)))
               ;suffix))
               ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
-              'specialv))
-      (replace-head-verb vp conjugated))))
+              'vp-head))
+      (replace-vp-head vp conjugated))))
 
 
 (defparameter *participle-for-post-modifying-verbs*
@@ -515,6 +531,7 @@
         *plur2surface*)
       (util:hide-ttt-ops ulf) :max-n 1000
       :rule-order :slow-forward)))
+
 
 (defun capitalize-first (string)
   (if (zerop (length string))
