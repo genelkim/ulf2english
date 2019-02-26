@@ -130,6 +130,7 @@
     (string-upcase
       (make-pattern-en-call python-call python-method))))
 
+
 ;; Takes an input noun string and pluralizes it.
 ;; NB: The pattern.en function has some additional parameters, but they don't
 ;; seem useful for the ULF project so they're not suppoted currently.
@@ -138,7 +139,23 @@
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'pluralize (list noun) nil))
          (rawout (make-pattern-en-call python-call python-method)))
-    (if preserve-case
-      rawout
-      (string-upcase rawout))))
+    (if preserve-case rawout (string-upcase rawout))))
+
+
+;; Takes an input adjective string and converts it to superlative form.
+(defun pattern-en-superlative (adj &key (python-method 'socket)
+                                        (preserve-case nil))
+  (assert (member python-method *python-call-methods*))
+  (let* ((python-call (python-call 'superlative (list adj) nil))
+         (rawout (make-pattern-en-call python-call python-method)))
+    (if preserve-case rawout (string-upcase rawout))))
+
+
+;; Takes an input adjective string and converts it to comparative form.
+(defun pattern-en-comparative (adj &key (python-method 'socket)
+                                        (preserve-case nil))
+  (assert (member python-method *python-call-methods*))
+  (let* ((python-call (python-call 'comparative (list adj) nil))
+         (rawout (make-pattern-en-call python-call python-method)))
+    (if preserve-case rawout (string-upcase rawout))))
 

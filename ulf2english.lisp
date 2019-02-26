@@ -20,7 +20,7 @@
           "_" " ")))))
 
 
-;; TODO: probably put a version of thi in ulf-lib.
+;; TODO: probably put a version of this in ulf-lib.
 ;; Returns t if 'token' is an atomic ULF element that has a corresponding token
 ;; in the surface string and return nil otherwise.  e.g.,
 ;;   man.n -> t
@@ -35,7 +35,7 @@
            (not (ulf:lex-elided? token))
            (not (ulf:lex-hole-variable? token)))
       (ulf:is-strict-name? token)
-      (member token'(that not and or to))))
+      (member token'(that not and or to most))))
 
 
 ;; Maps the ULF suffix to a pure POS symbol for UPPEN MORPH.
@@ -81,7 +81,7 @@
     (upper.a . uppermost.a)
     (lower.a . lowermost.a)))
 
-(defun superlative! (ulf)
+(defun lex-superlative! (ulf)
 ;````````````````````````
 ; Converts the given adjective to superlative form.
 ;   'bad.a -> 'worst.a
@@ -96,6 +96,18 @@
          suffix)))
     ;; Not something that can be turned superlative so just return.
     (t ulf)))
+
+(defun ap-superlative! (apulf)
+;`````````````````````
+; Converts the given adjective phrase and converts it to superlative form.
+; This amounts to finding the head adjective and making it superlative most of
+; the time.  If the head isn't found, we just wrap 'most' around the whole thing.
+  (multiple-value-bind (ha found _) (ulf:search-ap-head apulf)
+    (cond
+      (found
+        (multiple-value-bind (_ _ newap) (ulf:search-ap-head apulf :sub (lex-superlative! ha))
+          newap))
+      (t (list 'most apulf)))))
 
 
 (defun add-tense! (ulf)
@@ -121,6 +133,7 @@
     ;; Ignore all other cases for now.
     (t ulf)))
 
+
 (defun dumb-ppart (word)
 ;```````````````````````
 ; Takes a word symbol and uses a simple heuristic to make it into the past
@@ -134,6 +147,7 @@
         (util:fuse-into-atom (append letters '(#\E #\D)))))
     ;; Just return since it's not an atom.
     word))
+
 
 (defun pasv2surface! (ulf)
 ;`````````````````````
@@ -149,6 +163,7 @@
           (eq 'pasv (first ulf))
           (verb? (second ulf)))
      (list '(past be.v) (verb-to-past-participle! (second ulf))))))
+
 
 (defun verb-to-participle (verb &key (part-type 'PRESENT))
 ;`````````````````````````````````
@@ -170,8 +185,10 @@
                                       :aspect 'PROGRESSIVE))
         suffix))))
 
+
 (defun verb-to-past-participle! (verb)
   (verb-to-participle verb :part-type 'PAST))
+
 
 (defun verb-to-present-participle! (verb)
 ;`````````````````````````````````
@@ -179,163 +196,6 @@
 ;  run.v -> running.v
 ;  is.v -> being.v
   (verb-to-participle verb :part-type 'PRESENT))
-
-(defun marked-conjugated-vp-head? (x)
-  (or (and (symbolp x)
-           (multiple-value-bind (word suffix) (ulf:split-by-suffix x)
-             (eq suffix 'conjugated-vp-head)))
-      (and (listp x) (= 2 (length x))
-           (lex-tense? (first x)) (marked-conjugated-vp-head? (second x)))))
-
-(defun search-vp-head (vp &key (sub nil))
-;``````````````````````
-; TODO: move this to ulf-lib
-; Searches vp (a ULF VP) for the head, which is either the main verb or
-; auxiliary/perf/prog acting over the VP. If sub is not nil, sub substitutes
-; for the vp head.
-;
-; Returns the following values in a list
-;   vp head
-;   whether is was found
-;   new vp
-; TODO: how does this relate to auxiliaries...?
-  (cond
-    ;; Already marked conjguated VP head.
-    ((marked-conjugated-vp-head? vp)
-     (values vp t (if sub sub vp)))
-    ;; Simple tensed or not, lexical or passivized verb.
-    ((ttt:match-expr '(!1 lex-verbaux? pasv-lex-verb?
-                          (ulf:lex-tense? (! lex-verbaux? pasv-lex-verb?)))
-                     vp)
-     (values vp t (if sub sub vp)))
-    ;; Starts with a verb or auxiliary -- recurse into it.
-    ((and (listp vp)
-          (or (verb? (car vp)) (tensed-verb? (car vp)) (tensed-aux? (car vp))))
-     (multiple-value-bind (hv found new-carvp) (search-vp-head (car vp) :sub sub)
-       (values hv found (cons new-carvp (cdr vp)))))
-    ;; Starts with adv-a or phrasal sentence operator -- recurse into cdr.
-    ((and (listp vp)
-          (or (adv-a? (car vp)) (phrasal-sent-op? (car vp))))
-     (multiple-value-bind (hv found new-cdrvp) (search-vp-head (cdr vp) :sub sub)
-       (values hv found (cons (car vp) new-cdrvp))))
-    ;; Otherwise, it's not found.
-    (t (values nil nil vp))))
-
-
-(defun find-vp-head (vp)
-;````````````````````
-; Finds the main verb in a ULF VP.
-  (search-vp-head vp))
-
-
-(defun replace-vp-head (vp sub)
-;```````````````````````
-; Find the main verb and returns a new VP with the substitute value.
-  (multiple-value-bind (_ _ newvp) (search-vp-head vp :sub sub)
-    newvp))
-
-
-(defun search-head-noun (np &key (sub nil))
-; TODO: move this to separate file (not TTT phrasal pattern)
-; Searches np (a ULF NP) for the head noun. If sub is not nil, sub substitutes
-; for the head noun.
-;
-; Returns the following values in a list
-;   head noun
-;   whether it was found
-;   new np
-; This function treats 'plur' as part of the noun.
-  (cond
-    ;; Simple lexical or plural case.
-    ((or (lex-noun? np) (lex-name? np))
-     (values np t (if sub sub np)))
-    ;; Basic pluralized case.
-    ((and (listp np) (= (length np) 2) (equal 'plur (first np))
-          (or (lex-noun? (second np)) (lex-name-pred? (second np))))
-     (values np t (if sub sub np)))
-    ;; Pluralized relational noun case.
-    ((and (listp np) (= (length np) 2)
-          (equal 'plur (first np)) (listp (second np)))
-     (values (list 'plur (first (second np))) t
-             (if sub (list sub (cdr (second np)))
-               np)))
-    ;; Noun post-modification.
-    ;;   (n+preds ...)
-    ;;   (n+post ...)
-    ((ttt:match-expr '((! n+preds n+post) noun? _+) np)
-     (let ((macro (first np))
-           (inner-np (second np))
-           (post (cddr np)))
-       (multiple-value-bind (hn found new-inner-np) (search-head-noun inner-np :sub sub)
-         (values hn found (cons macro (cons new-inner-np post))))))
-    ;; Noun premodification.
-    ;;  (dog.n monster.n)
-    ;;  (happy.a fish.n)
-    ;;  ((mod-n happy.a) fish.n)
-    ;;  (|Rochester| landscape.n)
-    ((ttt:match-expr '((! mod-n? noun? adj? term?) noun?) np)
-     (let ((modifier (first np))
-           (inner-np (second np)))
-       (multiple-value-bind (hn found new-inner-np) (search-head-noun inner-np :sub sub)
-         (values hn found (list modifier new-inner-np)))))
-    ;; Phrasal sent op.
-    ;;   (definitely.adv-s table.n)
-    ;;   (not thing.n)
-    ((ttt:match-expr '(phrasal-sent-op? noun?) np)
-     (multiple-value-bind (hn found new-inner-np) (search-head-noun (second np) :sub sub)
-       (values hn found (list (first np) new-inner-np))))
-    ;; Otherise, noun followed by other stuff.
-    ;;   (collapse.n (of.p-arg (the.d empire.n)))
-    ((and (listp np) (noun? (first np)))
-     (multiple-value-bind (hn found new-inner-np) (search-head-noun (first np) :sub sub)
-       (values hn found (cons new-inner-np (cdr np)))))
-    ;; If none of these, we can't find it.
-    (t (values nil nil np))))
-
-
-;; TODO: move this somewhere more generic
-;; Returns true if the argument is a plural term.
-;;  (the.d (plur *.n))
-;;  (the.d (.... (plur *.n)))
-;;  they.pro
-;;  them.pro
-;;  we.pro
-(defun plural-term? (x)
-  (cond
-    ;; If an atom, it's just whether it's one of the selected pronouns.
-    ((atom x)
-     ;; TODO: deal with "ours is better"
-     (member x '(they.pro them.pro we.pro us.pro you.pro these.pro those.pro
-                          both.pro few.pro many.pro several.pro all.pro any.pro
-                          most.pro none.pro some.pro ours.pro yours.pro
-                          theirs.pro)))
-    ;; For terms from nouns, either the quantifier forces a plural reading, e.g. many,
-    ;; or we check the head noun for a plural operator.
-    ((and (listp x) (term? x) (= (length x) 2) (noun? (second x)))
-     (let ((term-former (first x))
-           (hn (search-head-noun (second x))))
-       ;; TODO: deal with examples like "all water is wet"
-       (or (member term-former '(these.d those.d both.d few.d many.d several.d))
-           (plur-lex-noun? hn))))
-    ;; Coordinated nouns or sets of terms are plural.
-    ((and (listp x) (term? x) (> (length x) 2))
-     (or (lex-set-of? (first x)) (lex-coord? (second x))))
-    ;; Otherwise, singular.
-    (t nil)))
-
-
-(defun plur-lex-noun? (arg)
-;````````````````````
-; True if arg is of the form (plur <lexical noun>) and false otherwise.
-  (and (listp arg) (= (length arg) 2)
-       (eql 'plur (first arg)) (or (lex-noun? (second arg))
-                                   (lex-name-pred? (second arg)))))
-
-(defun pasv-lex-verb? (arg)
-;````````````````````
-; True if arg is of the form (pasv <lexical verb>) and false otherwise.
-  (and (listp arg) (= (length arg) 2)
-       (eql 'pasv (first arg)) (lex-verb? (second arg))))
 
 
 (defun vp-to-participle! (vp &key (part-type nil))
@@ -356,7 +216,7 @@
   (assert (member part-type '(PRESENT PAST nil)))
   (cond
     ((verb? vp)
-     (let* ((head-verb (find-vp-head vp))
+     (let* ((head-verb (ulf:find-vp-head vp))
             (participle
               (cond
                 ;; Present participle condition.
@@ -377,7 +237,7 @@
                  (verb-to-past-participle! (second head-verb)))
                 (t (error "verb ~s is not a form that can become a past participle"
                           head-verb)))))
-       (replace-vp-head vp participle)))
+       (ulf:replace-vp-head vp participle)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
 
@@ -449,7 +309,10 @@
 
 (defparameter *most-n-morph*
   '(/ (most-n (!1 lex-adjective?) (!2 noun?))
-      ((superlative! !1) !2)))
+      ((lex-superlative! !1) !2)))
+(defparameter *most-morph*
+  '(/ (most (!1 adj?) (*2 phrasal-sent-op?))
+      ((ap-superlative! !1) *2)))
 
 
 (defun conjugate-vp-head! (vp subj)
@@ -459,8 +322,8 @@
 ; Assumes there's no passive operator on the verb, since this should be appled
 ; after (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb>
 ; ..))
-  (let ((num (if (plural-term? subj) 'PL 'SG))
-        (hv (find-vp-head vp))
+  (let ((num (if (plur-term? subj) 'PL 'SG))
+        (hv (ulf:find-vp-head vp))
         tense conjugated lex-verb)
     (setq tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
     (setq lex-verb (if tense (second hv) hv))
@@ -474,7 +337,7 @@
               ;suffix))
               ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
               'vp-head))
-      (replace-vp-head vp conjugated))))
+      (ulf:replace-vp-head vp conjugated))))
 
 
 (defparameter *participle-for-post-modifying-verbs*
@@ -566,7 +429,8 @@
         ; NB: comment below when testing tense-n-number2surface, but uncomment during use.
         ;*tense2surface* ; default tense if above didn't work.
         *plur2surface*
-        *most-n-morph*)
+        *most-n-morph*
+        *most-morph*)
       (util:hide-ttt-ops ulf) :max-n 1000
       :rule-order :slow-forward)))
 
@@ -629,11 +493,17 @@
 ;;the sentence termination character as a string
 ;;---Georgiy
 (defun extract-punctuation (ulf)
-  (if (and (> (length ulf) 1)
-	   (or (eq (cadr ulf) '?)
-	       (eq (cadr ulf) '!)))
-      (string (cadr ulf))
-    "."))
+  (cond
+    ((and (listp ulf) (> (length ulf) 1) (eq (car ulf) 'sub))
+     (extract-punctuation (third ulf)))
+    ((and (listp ulf) (> (length ulf) 1) (eq (car ulf) 'rep))
+     (extract-punctuation (second ulf)))
+    ((and (listp ulf) (= (length ulf) 2) (member (cadr ulf) '(? !)))
+     (string (cadr ulf)))
+    ;; TODO: tag questions...
+    ((and (listp ulf) (= (length ulf) 2) (eq (cadr ulf) '.?))
+     (string "?"))
+    (t ".")))
 
 
 ;; Input: a list of tokens.
@@ -659,8 +529,10 @@
 
 (defparameter *ulf2english-stages*
   '(;; TODO: generalize this function to adding types to all the hole variables.
-    ((lambda (x) (ulf:add-types-to-sub-vars x :calling-package :ulf2english))
-     "Add types to 'sub' variables")
+    ((lambda (x) (ulf:add-info-to-sub-vars x :calling-package :ulf2english))
+     "Add type/plurality info to 'sub' variables")
+    ((lambda (x) (ulf:add-info-to-relativizers x :calling-package :ulf2english))
+     "Add info to relativiers")
     (contextual-preprocess "Contextual preprocess")
     (add-morphology "Adding morphology")
     ((lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))

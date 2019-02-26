@@ -536,8 +536,8 @@
   '(sub (what.mod-n color.n)
         (((pres be.v)
           (the.d (n+preds (most-n low.a block.n)
-                          (of.p (the.d (most-n short.a stack.n))))))
-         *h) ?))
+                          (of.p (the.d (most-n short.a stack.n)))))
+          *h) ?)))
 
 (gen-blocks-qa-test bwqa-v27
   (:viet-bwqa)
@@ -733,13 +733,13 @@
 		    (:georgiy-bwqa)
 		    "What block is halfway on top of any other block?"
 		    '(((What.d block.n)
-		       ((pres be.v) (halfway.adv-a (on.p (k (n+preds top.n (of.p (any.d (other.a block.n))))))))) ?))
+		       ((pres be.v) (halfway.mod-a (on.p (k (n+preds top.n (of.p (any.d (other.a block.n))))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp85
 		    (:georgiy-bwqa)
 		    "Which block is side by side with the Texaco block?"
 		    '(((Which.d block.n)
-		       ((pres be.v) (side-by-side.adv-a (with.p (the.d (| Texaco|.n block.n)))))) ?))
+		       ((pres be.v) (side_by_side.a (with.p-arg (the.d (| Texaco|.n block.n)))))) ?))
 
 ;;(gen-blocks-qa-test bwqa-gp86
 ;;  (:georgiy-bwqa)
@@ -756,7 +756,7 @@
 		    (:georgiy-bwqa)
 		    "Which block is very close to the front edge of the table?"
 		    '(((Which.d block.n)
-		       ((pres be.v) ((adv-a (very.mod-a close.a)) (to.p (the.d (front.a (n+preds edge.n (of.p (the.d table.n))))))))) ?))
+		       ((pres be.v) ((mod-a (very.mod-a close.a)) (to.p (the.d (front.a (n+preds edge.n (of.p (the.d table.n))))))))) ?))
 
 (gen-blocks-qa-test bwqa-gp89
 		    (:georgiy-bwqa)
@@ -773,9 +773,5 @@
 		    (:georgiy-bwqa)
 		    "Which red blocks are directly on the table?"
 		    '(((Which.d (red.a (plur block.n)))
-		       ((pres be.v) (directly.adv-a (on.p (the.d table.n))))) ?))
-
-;;
-;; Tianyi
-;;
+		       ((pres be.v) (directly.mod-a (on.p (the.d table.n))))) ?))
 
