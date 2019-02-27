@@ -272,7 +272,7 @@
   (:gene-bwqa)
   "Which red blocks are directly on the table?"
   '(((which.d (red.a (plur block.n)))
-     ((pres be.v) directly.mod-a (on.p (the.d table.n)))) ?))
+     ((pres be.v) directly.adv-a (on.p (the.d table.n)))) ?))
 (gen-blocks-qa-test bwqa-gk39
   (:gene-bwqa)
   "Which blue block the Nvidia block is not near to?"
@@ -440,7 +440,7 @@
   "Are there two blocks that are not near each other?"
   '(((pres be.v) there.pro
      (two.d (n+preds (plur block.n)
-                     (that.rel ((pres be) not.adv-s (near.p (each.d (other.n {ref}.n)))))))) ?))
+                     (that.rel ((pres be.v) not.adv-s (near.p (each.d (other.n {ref}.n)))))))) ?))
 
 (gen-blocks-qa-test bwqa-v15
   (:viet-bwqa)

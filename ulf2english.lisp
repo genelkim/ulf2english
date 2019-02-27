@@ -56,15 +56,15 @@
 
 (defun pluralize! (ulf)
 ;``````````````````````
-; Converts the given ULF to the plural version of the surface form.
-    ;; TODO: handle recursive cases... (child-of.n ...)
+; Converts the given ULF noun phrase to the plural version of the surface form.
+; For complex noun phrases, this amounts to pluralizing the head of the noun phrase.
     ;; TODO: handle pluralization of relational nouns [child-of.n -> children-of.n, not
     ;;                                                 child-of.n -> child-ofs.n]
   (cond
     ((null ulf) nil)
-    ((not (atom ulf)) ulf)
-    ((ulf:lex-elided? ulf) ulf)
-    (t
+    ((and (atom ulf) (ulf:lex-elided? ulf)) ulf)
+    ;; Atomic case.
+    ((atom ulf)
      (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
        (ulf:add-suffix
          (cond
@@ -73,7 +73,12 @@
             (intern (pattern-en-pluralize (string word) :preserve-case t)))
            ;; Otherwise ignore case.
            (t (intern (pattern-en-pluralize (string word) :preserve-case nil))))
-         suffix)))))
+         suffix)))
+    ;; NP case.
+    (t
+      (let* ((hn (find-np-head ulf :callpkg :ulf2english))
+             (plurhn (pluralize! hn)))
+        (replace-np-head ulf plurhn)))))
 
 (defvar *superlative-special-case-alist*
   '((left.a . leftmost.a)
@@ -263,22 +268,28 @@
 ;; TODO: complete
 ;; 1. add phrasal sent ops
 ;; 2. deal with auxiliaries
-(defparameter *inv-tense-n-number2surface*
-  '(/ ((!1 be.v have.v (lex-tense? be.v) (lex-tense? have.v)
-           aux? (lex-tense? aux?))
+(defparameter *inv-copula-tense-n-number2surface*
+  '(/ ((!1 (lex-tense? be.v))
        (*1 phrasal-sent-op?)
        (!2 term?)
        (*2 phrasal-sent-op?)
        (!3 pred?))
       ((conjugate-vp-head! !1 !2) *1 !2 *2 !3)))
+(defparameter *inv-aux-tense-n-number2surface*
+  '(/ ((!1 (lex-tense? (! aux? have.v)))
+       (*1 phrasal-sent-op?)
+       (!2 term?)
+       (*2 phrasal-sent-op?)
+       (!3 verb?))
+      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3)))
 (defparameter *exist-there-tense-n-number2surface*
-  '(/ (there.pro ((!1 lex-verb? (lex-tense? lex-verb?))
+  '(/ (there.pro ((!1 (lex-tense? lex-verb?))
                   (*1 phrasal-sent-op?)
                   (!2 term?)
                   (*2 phrasal-sent-op?)))
       (there.pro ((conjugate-vp-head! !1 !2) *1 !2 *2))))
 (defparameter *inv-exist-there-tense-n-number2surface*
-  '(/ ((!1 lex-verb? (lex-tense? lex-verb?))
+  '(/ ((!1 (lex-tense? lex-verb?))
        there.pro
        (*1 phrasal-sent-op?)
        (!2 term?)
@@ -290,22 +301,10 @@
 (defparameter *simple-what-is-tense-n-number2surface*
   '(/ (what.pro
        (*1 phrasal-sent-op?)
-       ((!1 be.v (lex-tense? be.v))
+       ((!1 (lex-tense? be.v))
         (*2 phrasal-sent-op?)
         (= (!2 term?))))
       (what.pro *1 ((conjugate-vp-head! !1 !2) *2 (= !2)))))
-
-;(defparameter *inv-simple-sub-tense-n-number2surface*
-;  '(/ (sub (!1 pred?)
-;           (*1 phrasal-sent-op?)
-;           ((!2 be.v (lex-tense? be.v))
-;            (*2 phrasal-sent-op?)
-;            (!3 term?)
-;            (*3 phrasal-sent-op?)
-;            [*h]))
-;      (sub !1 *1 ((conjugate-vp-head! !2 !3)
-;                  *2 !3 *3 [*h]))))
-;
 
 (defparameter *most-n-morph*
   '(/ (most-n (!1 lex-adjective?) (!2 noun?))
@@ -422,7 +421,8 @@
         *pasv2surface*
         *simple-what-is-tense-n-number2surface*
         *tense-n-number2surface*
-        *inv-tense-n-number2surface*
+        *inv-copula-tense-n-number2surface*
+        *inv-aux-tense-n-number2surface*
         *exist-there-tense-n-number2surface*
         *inv-exist-there-tense-n-number2surface*
         ;*inv-simple-sub-tense-n-number2surface*

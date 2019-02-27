@@ -159,3 +159,9 @@
          (rawout (make-pattern-en-call python-call python-method)))
     (if preserve-case rawout (string-upcase rawout))))
 
+;; Memoize.
+(memoize 'pattern-en-conjugate)
+(memoize 'pattern-en-pluralize)
+(memoize 'pattern-en-superlative)
+(memoize 'pattern-en-comparative)
+
