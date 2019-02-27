@@ -30,28 +30,15 @@
 ;;   to -> t
 ;;   perf -> t
 ;;   {man}.n -> nil
+;;   2 -> t
+;;   "a" -> t
 (defun is-surface-token? (token)
   (or (and (ulf:has-suffix? token)
            (not (ulf:lex-elided? token))
            (not (ulf:lex-hole-variable? token)))
       (ulf:is-strict-name? token)
-      (member token'(that not and or to most))))
-
-
-;; Maps the ULF suffix to a pure POS symbol for UPPEN MORPH.
-;; TODO: complete...
-(defun suffix-to-pos (suffix)
-  (case suffix
-    (adv-a 'adv)
-    (adv-e 'adv)
-    (adv-s 'adv)
-    (adv-f 'adv)
-    ; Uppen morph calls auxiliaries verbs.
-    (aux-s 'v)
-    (aux-v 'v)
-    ;(aux-s 'aux)
-    ;(aux-v 'aux)
-    (otherwise suffix)))
+      (member token '(that not and or to most))
+      (not (symbolp token))))
 
 
 (defun pluralize! (ulf)
@@ -79,6 +66,24 @@
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
              (plurhn (pluralize! hn)))
         (replace-np-head ulf plurhn)))))
+
+
+(defun ulf-quote? (ulf)
+  (and (listp ulf) (= (length ulf) 3)
+       (eql '\" (first ulf)) (eql '\" (third ulf))))
+
+
+(defun quote2surface! (ulf)
+  (cond
+    ((ulf-quote? ulf)
+     (ulf2english (second ulf) :add-punct? nil :capitalize-front? nil))
+    (t ulf)))
+
+
+(defun quotes2surface! (ulf)
+  (ttt:apply-rule '(/ (! ulf-quote?) (quote2surface! !)) ulf
+                  :max-n 1000))
+
 
 (defvar *superlative-special-case-alist*
   '((left.a . leftmost.a)
@@ -160,35 +165,48 @@
 ; (pasv ulf).  Otherwise, it returns the input directly.
 ;
 ; e.g.
-;   (pasv hit.v) -> ((past be.v) hit.v)
-;   (pasv confuse.v) -> ((past be.v) confused.v)
+;   (pasv hit.v) -> (be.v hit.v)
+;   (pasv confuse.v) -> (be.v confused.v)
+;   (pres (pasv confuse.v)) -> ((pres be.v) confused.v)
 ;   TODO: get the inherited tense
   (cond
-    ((and (= (length ulf))
-          (eq 'pasv (first ulf))
-          (verb? (second ulf)))
-     (list '(past be.v) (verb-to-past-participle! (second ulf))))))
+    ((or (not (listp ulf)) (not (= (length ulf) 2))) ulf)
+    ((and (eq 'pasv (first ulf)) (verb? (second ulf)))
+     (list 'be.v (verb-to-past-participle! (second ulf))))
+    ((lex-tense? (first ulf))
+     (let ((tenseless (pasv2surface! (second ulf))))
+       (list (list (first ulf) (first tenseless))
+             (second tenseless))))
+    (t ulf)))
 
 
-(defun verb-to-participle (verb &key (part-type 'PRESENT))
+
+(defun verb-to-participle (verb &key (part-type 'PRESENT) (force nil))
 ;`````````````````````````````````
 ; Converts the given verb symbol to participle form of the given type.
 ; PRESENT
 ;  run.v -> running.v
-;  is.v -> being.v
+;  be.v -> being.v
 ; PAST
 ;  run.v -> run.v
 ;  confuse.v confused.v
-;   mention -> mentioned
+;  mention.v -> mentioned.v
+;
+; The parameter 'force' forces the participle generation even if this word is
+; not in infinitive form. This parameter ensures that words that are already in
+; participle form aren't accidentally re-processed.
    ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
    ;; with "ppart".
   (assert (member part-type '(PRESENT PAST)))
-  (if (and (symbolp verb) (verb? verb))
-    (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
-      (ulf:add-suffix
-        (intern (pattern-en-conjugate (string word) :tense part-type
-                                      :aspect 'PROGRESSIVE))
-        suffix))))
+  (cond
+    ((and (symbolp verb) (verb? verb)
+          (or force (infinitive? verb)))
+     (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
+       (ulf:add-suffix
+         (intern (pattern-en-conjugate (string word) :tense part-type
+                                       :aspect 'PROGRESSIVE))
+         suffix)))
+    (t verb)))
 
 
 (defun verb-to-past-participle! (verb)
@@ -215,9 +233,9 @@
 ;   -> '(quickly.adv-a (looking.v around.adv-a))
 ; PAST PARTICIPLE
 ;   '((pasv sleep.v) (adv-a (in.p (the.d bed.n))))
-;   -> '(slept.v (adv-a (in.p (the.d bed.n))))
+;   -> '((pasv slept.v) (adv-a (in.p (the.d bed.n))))
 ;   '(carefully.adv-a (pasv write.v))
-;   -> '(carefully.adv-a written.v)
+;   -> '(carefully.adv-a (pasv written.v))
   (assert (member part-type '(PRESENT PAST nil)))
   (cond
     ((verb? vp)
@@ -246,6 +264,18 @@
     ;; If it isn't a verb phrase, just return.
     (t vp)))
 
+(defun conjugate-infinitive (verb)
+  (if (not (atom verb))
+    verb
+    (multiple-value-bind (word suffix) (split-by-suffix verb)
+      (add-suffix
+        (intern
+          (pattern-en-conjugate (string word) :tense 'infinitive))
+        suffix))))
+
+(defun infinitive? (verb)
+  (equal verb (conjugate-infinitive verb)))
+
 ;; Convenience functions (also for TTT).
 (defun vp-to-past-participle! (vp)
   (vp-to-participle! vp :part-type 'PAST))
@@ -259,9 +289,12 @@
 (defparameter *tense2surface*
   '(/ ((!1 ulf:lex-tense?) _!2)
       (add-tense! (!1 _!2))))
+(defparameter *tensed-pasv2surface*
+  '(/ (!1 (lex-tense? (pasv _!)))
+      (pasv2surface! !1)))
 (defparameter *pasv2surface*
-  '(/ (pasv _!)
-      (pasv2surface! (pasv _!))))
+  '(/ (!1 (pasv _!))
+      (pasv2surface! !1)))
 (defparameter *tense-n-number2surface*
   '(/ ((!1 term?) (*1 phrasal-sent-op?) (!2 pred?))
       (!1 *1 (conjugate-vp-head! !2 !1))))
@@ -418,6 +451,7 @@
         *participle-for-implicit-mod-x*
         *pres-part-for-ka*
         ;; Core non-interactive pieces.
+        *tensed-pasv2surface*
         *pasv2surface*
         *simple-what-is-tense-n-number2surface*
         *tense-n-number2surface*
@@ -535,6 +569,7 @@
      "Add info to relativiers")
     (contextual-preprocess "Contextual preprocess")
     (add-morphology "Adding morphology")
+    (quotes2surface! "Handle quotes")
     ((lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
     ((lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
