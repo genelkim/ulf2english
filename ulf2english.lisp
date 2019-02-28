@@ -581,26 +581,27 @@
 
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
-(defun ulf2english (ulf &key (add-punct? t) (capitalize-front? t))
+(defun ulf2english (inulf &key (add-punct? t) (capitalize-front? t))
   ;; TODO: make more sophisticated version (quotes, ds, etc.).
 
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
   ;; "or", "to".
-  (let* ((idfn #'(lambda (x) x))
-         (punct (extract-punctuation ulf))
-         (add-punct-fn (add-punct-curried punct))
-        staged)
-    (setq staged (reduce #'(lambda (acc new)
-                             (let* ((fn (first new))
-                                    (desc (second new))
-                                    (res (funcall fn acc)))
-                               (if *debug-ulf2english*
-                                 (format t "~a: ~s~%" desc res))
-                               res))
-                         *ulf2english-stages* :initial-value ulf))
-    (funcall (compose
-               (if add-punct? add-punct-fn idfn)
-               (if capitalize-front? #'capitalize-first idfn))
-             staged)))
+  (util:in-intern (inulf ulf :ulf2english)
+    (let* ((idfn #'(lambda (x) x))
+           (punct (extract-punctuation ulf))
+           (add-punct-fn (add-punct-curried punct))
+          staged)
+      (setq staged (reduce #'(lambda (acc new)
+                               (let* ((fn (first new))
+                                      (desc (second new))
+                                      (res (funcall fn acc)))
+                                 (if *debug-ulf2english*
+                                   (format t "~a: ~s~%" desc res))
+                                 res))
+                           *ulf2english-stages* :initial-value ulf))
+      (funcall (compose
+                 (if add-punct? add-punct-fn idfn)
+                 (if capitalize-front? #'capitalize-first idfn))
+               staged))))
 
