@@ -87,7 +87,7 @@
                             (towards.p-arg you.pro)))
               (voc |Lex|) 
               ((pres be.v) endless.a)))
-           ("You in the yellow shirt, call 911"
+           ("You in the yellow shirt, call 911!"
             ((voc (np+preds you.pro (in.p (the.d (yellow.a shirt.n)))))
              ({you}.pro ((pres call.v) |911|)) !))
            ("John, you rascal, where have you been?"
@@ -100,19 +100,14 @@
              (voc |John|) ?))
            ("Why are ye fearful, O ye of little faith?"
             ((Why.adv-s ((pres be.v) ye.pro fearful.a))
-             (voc-O (np+preds ye.pro (of.p (little.a faith.n))))) ?)))
-        ;; disregard punctuation, casing or spaces for now
-        (strclean (compose 
-                     #'cl-strings:clean
-                     #'remove-punctuation
-                     #'string-downcase)))
+             (voc-O (np+preds ye.pro (of.p (little.a faith.n))))) ?))))
     (mapcar
-      ;; For each pair, generate the ulf2english, clean the strings and compare.
+      ;; for each pair, generate the ulf2english and compare
       #'(lambda (x)
-          (let ((expected (funcall strclean (first x)))
+          (let ((expected (first x))
                 (ulf (second x))
                 generated)
-            (setq generated (funcall strclean (ulf2english ulf)))
+            (setq generated (ulf2english ulf))
             (assert-equal expected generated
                           expected generated ulf)))
       sent-ulf-pairs)))
