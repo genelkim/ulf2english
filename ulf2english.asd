@@ -5,7 +5,7 @@
   :name "ulf2english"
   :version "0.0.1"
   :author "Gene Louis Kim"
-  :depends-on (:ttt :util :ulf-lib :cl-strings :inferior-shell :drakma :cl-json :lisp-unit)
+  :depends-on (:ttt :cl-strings :cl-json :util :cl-ppcre :ulf-lib :inferior-shell :drakma :lisp-unit)
   :components ((:file "package")
                (:file "pattern-en")
                (:file "ulf2english"))) 

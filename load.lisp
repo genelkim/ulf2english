@@ -3,14 +3,14 @@
 (require 'asdf)
 
 ;; Try to be quiet.
-(setf (sys:gsgc-switch :print) nil)
-(setf (sys:gsgc-switch :stats) nil)
-(setf (sys:gsgc-switch :verbose) nil)
+;(setf (sys:gsgc-switch :print) nil)
+;(setf (sys:gsgc-switch :stats) nil)
+;(setf (sys:gsgc-switch :verbose) nil)
 (defvar *asdf-verbose* nil)
 
 ;; avoids saving compiled files in special local cache.
-(let f (and (setq f (fboundp (find-symbol "DISABLE-OUTPUT-TRANSLATIONS" 'asdf)))
-	    (funcall f)))
+;(let (f) (and (setq f (fboundp (find-symbol "DISABLE-OUTPUT-TRANSLATIONS" 'asdf)))
+;	    (funcall f)))
 
 ;; from http://www.cliki.net/asdf
 ;;; If the fasl was stale, try to recompile and load (once). Since only SBCL
