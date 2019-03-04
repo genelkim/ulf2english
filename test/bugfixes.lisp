@@ -70,3 +70,50 @@
                           expected generated ulf)))
       sent-ulf-pairs)))
 
+(define-test vocatives-from-doc
+  "finding issues with vocatives (examples from documentation on vocatives)"
+  (:tag :bugfixes :vocatives)
+  (let ((sent-ulf-pairs
+         '(("Mary, I see you"
+            ((voc |Mary|) 
+             (I.pro ((pres see.v) you.pro))))
+           ("I don't think I understand, Susan"
+            ((I.pro ((pres do.aux-s) 
+                     not.adv-s
+                     (think.v (tht (I.pro ((pres understand.v) {ref}.pro))))))
+              (voc |Susan|)))
+           ("My ill feelings towards you, Lex, are endless"
+            ((My.d (n+preds (ill.a (plur feeling.n))
+                            (towards.p-arg you.pro)))
+              (voc |Lex|) 
+              ((pres be.v) endless.a)))
+           ("You in the yellow shirt, call 911"
+            ((voc (np+preds you.pro (in.p (the.d (yellow.a shirt.n)))))
+             ({you}.pro ((pres call.v) |911|)) !))
+           ("John, you rascal, where have you been?"
+            ((voc |John|) 
+             (voc (np+preds you.pro rascal.n))
+             (sub (at.p (what.d place.n)) ((pres perf) you.pro (be.v *h))) ?))
+           ("You rascal where have you been, John?"
+            ((voc (np+preds you.pro rascal.n))
+             (sub (at.p (what.d place.n)) ((pres perf) you.pro (be.v *h)))
+             (voc |John|) ?))
+           ("Why are ye fearful, O ye of little faith?"
+            ((Why.adv-s ((pres be.v) ye.pro fearful.a))
+             (voc-O (np+preds ye.pro (of.p (little.a faith.n))))) ?)))
+        ;; disregard punctuation, casing or spaces for now
+        (strclean (compose 
+                     #'cl-strings:clean
+                     #'remove-punctuation
+                     #'string-downcase)))
+    (mapcar
+      ;; For each pair, generate the ulf2english, clean the strings and compare.
+      #'(lambda (x)
+          (let ((expected (funcall strclean (first x)))
+                (ulf (second x))
+                generated)
+            (setq generated (funcall strclean (ulf2english ulf)))
+            (assert-equal expected generated
+                          expected generated ulf)))
+      sent-ulf-pairs)))
+
