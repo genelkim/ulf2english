@@ -3,7 +3,7 @@
 
 (in-package :ulf2english)
 
-(setq *debug-ulf2english* nil)
+(defparameter *debug-ulf2english* nil)
 
 ;; Post formats a ULF-to-string mapping.
 ;; If it is a name (e.g. |John|), the pipes are stripped off.
@@ -112,10 +112,13 @@
 ; Converts the given adjective phrase and converts it to superlative form.
 ; This amounts to finding the head adjective and making it superlative most of
 ; the time.  If the head isn't found, we just wrap 'most' around the whole thing.
-  (multiple-value-bind (ha found _) (ulf:search-ap-head apulf)
+  (multiple-value-bind (ha found _1) (ulf:search-ap-head apulf)
+    (declare (ignore _1))
     (cond
       (found
-        (multiple-value-bind (_ _ newap) (ulf:search-ap-head apulf :sub (lex-superlative! ha))
+        (multiple-value-bind (_2 _3 newap) (ulf:search-ap-head apulf :sub (lex-superlative! ha))
+          (declare (ignore _2))
+          (declare (ignore _3))
           newap))
       (t (list 'most apulf)))))
 
@@ -359,7 +362,8 @@
         tense conjugated lex-verb)
     (setq tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
     (setq lex-verb (if tense (second hv) hv))
-    (multiple-value-bind (word suffix) (split-by-suffix lex-verb)
+    (multiple-value-bind (word _1) (split-by-suffix lex-verb)
+      (declare (ignore _1))
       (setq conjugated
             (add-suffix
               (intern
@@ -562,21 +566,21 @@
 
 
 (defparameter *ulf2english-stages*
-  '(;; TODO: generalize this function to adding types to all the hole variables.
-    ((lambda (x) (ulf:add-info-to-sub-vars x :calling-package :ulf2english))
-     "Add type/plurality info to 'sub' variables")
-    ((lambda (x) (ulf:add-info-to-relativizers x :calling-package :ulf2english))
+  (list ;; TODO: generalize this function to adding types to all the hole variables.
+    (list #'(lambda (x) (ulf:add-info-to-sub-vars x :calling-package :ulf2english))
+          "Add type/plurality info to 'sub' variables")
+    (list #'(lambda (x) (ulf:add-info-to-relativizers x :calling-package :ulf2english))
      "Add info to relativiers")
-    (contextual-preprocess "Contextual preprocess")
-    (add-morphology "Adding morphology")
-    (quotes2surface! "Handle quotes")
-    ((lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
+    (list #'contextual-preprocess "Contextual preprocess")
+    (list #'add-morphology "Adding morphology")
+    (list #'quotes2surface! "Handle quotes")
+    (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    ((lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
-    ((lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
-    ((lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
-    (merge-det-thing-combos "Merge special determiner-noun combinations")
-    ((lambda (x) (cl-strings:join x :separator " ")) "Glue together")))
+    (list #'(lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
+    (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
+    (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
+    (list #'merge-det-thing-combos "Merge special determiner-noun combinations")
+    (list #'(lambda (x) (cl-strings:join x :separator " ")) "Glue together")))
 
 
 ;; Maps a ULF formula to a corresponding surface string.

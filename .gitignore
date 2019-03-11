@@ -1,3 +1,6 @@
+# NFS temp files.
+.nfs*
+
 # Folder for placing tee output files.
 teeout/
 

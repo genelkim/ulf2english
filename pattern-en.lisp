@@ -11,9 +11,9 @@
 
 (defun ulf2pen-tense (tense)
   (case tense
-    ('pres 'present)
-    ('past 'past)
-    ('cf 'past)
+    (pres 'present)
+    (past 'past)
+    (cf 'past)
     ;; TODO: raise error here
     (otherwise (error "~s is not a valid ulf tense" tense))))
 
@@ -83,12 +83,12 @@
   ;; the shell version.
   (case python-method
     ;; Run the python call over a socket.
-    ('socket
+    (socket
       (if (not *setup-complete*)
         (setup-pattern-en-server))
       (python-over-socket python-call 'eval))
     ;; Run the python call through the shell.
-    ('shell
+    (shell
       (inferior-shell:run/s
         `(python call-pattern-en-fn.py
                  ,python-call)))))
