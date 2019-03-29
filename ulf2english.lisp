@@ -39,6 +39,7 @@
       (ulf:is-strict-name? token)
       (member token '(that not and or to most))
       (not (symbolp token))))
+;(ttt:store-pred 'is-surface-token? #'is-surface-token?)
 
 
 (defun pluralize! (ulf)
@@ -66,24 +67,26 @@
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
              (plurhn (pluralize! hn)))
         (replace-np-head ulf plurhn)))))
+;(ttt:store-pred 'pluralize! #'pluralize!)
 
 
 (defun ulf-quote? (ulf)
   (and (listp ulf) (= (length ulf) 3)
        (eql '\" (first ulf)) (eql '\" (third ulf))))
-
+;(ttt:store-pred 'ulf-quote? #'ulf-quote?)
 
 (defun quote2surface! (ulf)
   (cond
     ((ulf-quote? ulf)
      (ulf2english (second ulf) :add-punct? nil :capitalize-front? nil))
     (t ulf)))
+;(ttt:store-pred 'quote2surface! #'quote2surface!)
 
 
 (defun quotes2surface! (ulf)
   (ttt:apply-rule '(/ (! ulf-quote?) (quote2surface! !)) ulf
                   :max-n 1000))
-
+;(ttt:store-pred 'quotes2surface! #'quotes2surface!)
 
 (defvar *superlative-special-case-alist*
   '((left.a . leftmost.a)
@@ -106,6 +109,7 @@
          suffix)))
     ;; Not something that can be turned superlative so just return.
     (t ulf)))
+;(ttt:store-pred 'lex-superlative! #'lex-superlative!)
 
 (defun ap-superlative! (apulf)
 ;`````````````````````
@@ -121,6 +125,7 @@
           (declare (ignore _3))
           newap))
       (t (list 'most apulf)))))
+;(ttt:store-pred 'ap-superlative! #'ap-superlative!)
 
 
 (defun add-tense! (ulf)
@@ -145,6 +150,7 @@
            suffix))))
     ;; Ignore all other cases for now.
     (t ulf)))
+;(ttt:store-pred 'add-tense! #'add-tense!)
 
 
 (defun dumb-ppart (word)
@@ -181,7 +187,7 @@
        (list (list (first ulf) (first tenseless))
              (second tenseless))))
     (t ulf)))
-
+;(ttt:store-pred 'pasv2surface! #'pasv2surface!)
 
 
 (defun verb-to-participle (verb &key (part-type 'PRESENT) (force nil))
@@ -214,7 +220,7 @@
 
 (defun verb-to-past-participle! (verb)
   (verb-to-participle verb :part-type 'PAST))
-
+;(ttt:store-pred 'verb-to-past-participle! #'verb-to-past-participle!)
 
 (defun verb-to-present-participle! (verb)
 ;`````````````````````````````````
@@ -222,7 +228,7 @@
 ;  run.v -> running.v
 ;  is.v -> being.v
   (verb-to-participle verb :part-type 'PRESENT))
-
+;(ttt:store-pred 'verb-to-present-participle! #'verb-to-present-participle!)
 
 (defun vp-to-participle! (vp &key (part-type nil))
 ;```````````````````````````````
@@ -266,6 +272,7 @@
        (ulf:replace-vp-head vp participle)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
+;(ttt:store-pred 'vp-to-participle! #'vp-to-participle!)
 
 (defun conjugate-infinitive (verb)
   (if (not (atom verb))
@@ -278,12 +285,15 @@
 
 (defun infinitive? (verb)
   (equal verb (conjugate-infinitive verb)))
+;(ttt:store-pred 'infinitive? #'infinitive?)
 
 ;; Convenience functions (also for TTT).
 (defun vp-to-past-participle! (vp)
   (vp-to-participle! vp :part-type 'PAST))
+;(ttt:store-pred 'vp-to-past-participle! #'vp-to-past-participle!)
 (defun vp-to-present-participle! (vp)
   (vp-to-participle! vp :part-type 'PRESENT))
+;(ttt:store-pred 'vp-to-present-participle! #'vp-to-present-participle!)
 
 
 (defparameter *plur2surface*
@@ -374,7 +384,7 @@
               ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
               'vp-head))
       (ulf:replace-vp-head vp conjugated))))
-
+;(ttt:store-pred 'conjugate-vp-head! #'conjugate-vp-head!)
 
 (defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
@@ -400,8 +410,10 @@
 ;; tensed variants.
 (defun prog2be! (proginst)
   (subst 'be.v 'prog proginst))
+;(ttt:store-pred 'prog2be! #'prog2be!)
 (defun perf2have! (perfinst)
   (subst 'have.v 'perf perfinst))
+;(ttt:store-pred 'perf2have! #'perf2have!)
 
 ;; All the prog handling rules.
 (defparameter *prog2surface*
@@ -576,7 +588,8 @@
     (list #'quotes2surface! "Handle quotes")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'(lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
+    (list #'(lambda (x) (mapcar #'(lambda (y) (util:sym2str y)) x)) 
+          "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
     (list #'merge-det-thing-combos "Merge special determiner-noun combinations")
