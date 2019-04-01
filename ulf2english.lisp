@@ -70,7 +70,7 @@
 
 (defun ulf-quote? (ulf)
   (and (listp ulf) (= (length ulf) 3)
-       (eql '\" (first ulf)) (eql '\" (third ulf))))
+       (eql '|"| (first ulf)) (eql '|"| (third ulf))))
 
 
 (defun quote2surface! (ulf)
