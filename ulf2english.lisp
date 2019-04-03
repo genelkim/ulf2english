@@ -39,6 +39,7 @@
       (ulf:is-strict-name? token)
       (member token '(that not and or to most))
       (not (symbolp token))))
+;(ttt:store-pred 'is-surface-token? #'is-surface-token?)
 
 
 (defun pluralize! (ulf)
@@ -52,20 +53,24 @@
     ((and (atom ulf) (ulf:lex-elided? ulf)) ulf)
     ;; Atomic case.
     ((atom ulf)
-     (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
-       (ulf:add-suffix
-         (cond
-           ;; Preserve case for strict names.
-           ((ulf:is-strict-name? word)
-            (intern (pattern-en-pluralize (string word) :preserve-case t)))
-           ;; Otherwise ignore case.
-           (t (intern (pattern-en-pluralize (string word) :preserve-case nil))))
-         suffix)))
+     (let ((pkg (symbol-package ulf)))
+       (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
+         (ulf:add-suffix
+           (cond
+             ;; Preserve case for strict names.
+             ((ulf:is-strict-name? word)
+              (intern (pattern-en-pluralize (string word) :preserve-case t)
+                      pkg))
+             ;; Otherwise ignore case.
+             (t (intern (pattern-en-pluralize (string word) :preserve-case nil)
+                        pkg)))
+           suffix))))
     ;; NP case.
     (t
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
              (plurhn (pluralize! hn)))
         (replace-np-head ulf plurhn)))))
+;(ttt:store-pred 'pluralize! #'pluralize!)
 
 
 (defun ulf-quote? (ulf)
@@ -78,12 +83,13 @@
     ((ulf-quote? ulf)
      (ulf2english (second ulf) :add-punct? nil :capitalize-front? nil))
     (t ulf)))
+;(ttt:store-pred 'quote2surface! #'quote2surface!)
 
 
 (defun quotes2surface! (ulf)
   (ttt:apply-rule '(/ (! ulf-quote?) (quote2surface! !)) ulf
                   :max-n 1000))
-
+;(ttt:store-pred 'quotes2surface! #'quotes2surface!)
 
 (defvar *superlative-special-case-alist*
   '((left.a . leftmost.a)
@@ -101,11 +107,14 @@
      (cdr (assoc ulf *superlative-special-case-alist*)))
     ((lex-adjective? ulf)
      (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
+       (let ((pkg (symbol-package ulf)))
        (ulf:add-suffix
-         (intern (pattern-en-superlative (string-downcase (string word))))
-         suffix)))
+         (intern (pattern-en-superlative (string-downcase (string word)))
+                 pkg)
+         suffix))))
     ;; Not something that can be turned superlative so just return.
     (t ulf)))
+;(ttt:store-pred 'lex-superlative! #'lex-superlative!)
 
 (defun ap-superlative! (apulf)
 ;`````````````````````
@@ -121,6 +130,7 @@
           (declare (ignore _3))
           newap))
       (t (list 'most apulf)))))
+;(ttt:store-pred 'ap-superlative! #'ap-superlative!)
 
 
 (defun add-tense! (ulf)
@@ -137,14 +147,17 @@
           (ulf:lex-tense? (first ulf))
           (or (verb? (second ulf))
               (aux? (second ulf))))
-     (let ((tense (first ulf))
-           (verb (second ulf)))
+     (let* ((tense (first ulf))
+            (verb (second ulf))
+            (pkg (symbol-package verb)))
        (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
          (ulf:add-suffix
-           (intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense)))
+           (intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
+                   pkg)
            suffix))))
     ;; Ignore all other cases for now.
     (t ulf)))
+;(ttt:store-pred 'add-tense! #'add-tense!)
 
 
 (defun dumb-ppart (word)
@@ -181,7 +194,7 @@
        (list (list (first ulf) (first tenseless))
              (second tenseless))))
     (t ulf)))
-
+;(ttt:store-pred 'pasv2surface! #'pasv2surface!)
 
 
 (defun verb-to-participle (verb &key (part-type 'PRESENT) (force nil))
@@ -205,16 +218,18 @@
     ((and (symbolp verb) (verb? verb)
           (or force (infinitive? verb)))
      (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
-       (ulf:add-suffix
-         (intern (pattern-en-conjugate (string word) :tense part-type
-                                       :aspect 'PROGRESSIVE))
-         suffix)))
+       (let ((pkg (symbol-package verb)))
+         (ulf:add-suffix
+           (intern (pattern-en-conjugate (string word) :tense part-type
+                                         :aspect 'PROGRESSIVE)
+                   pkg)
+           suffix))))
     (t verb)))
 
 
 (defun verb-to-past-participle! (verb)
   (verb-to-participle verb :part-type 'PAST))
-
+;(ttt:store-pred 'verb-to-past-participle! #'verb-to-past-participle!)
 
 (defun verb-to-present-participle! (verb)
 ;`````````````````````````````````
@@ -222,7 +237,7 @@
 ;  run.v -> running.v
 ;  is.v -> being.v
   (verb-to-participle verb :part-type 'PRESENT))
-
+;(ttt:store-pred 'verb-to-present-participle! #'verb-to-present-participle!)
 
 (defun vp-to-participle! (vp &key (part-type nil))
 ;```````````````````````````````
@@ -266,24 +281,30 @@
        (ulf:replace-vp-head vp participle)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
+;(ttt:store-pred 'vp-to-participle! #'vp-to-participle!)
 
 (defun conjugate-infinitive (verb)
   (if (not (atom verb))
     verb
     (multiple-value-bind (word suffix) (split-by-suffix verb)
+      (let ((pkg (symbol-package verb)))
       (add-suffix
         (intern
-          (pattern-en-conjugate (string word) :tense 'infinitive))
-        suffix))))
+          (pattern-en-conjugate (string word) :tense 'infinitive)
+          pkg)
+        suffix)))))
 
 (defun infinitive? (verb)
   (equal verb (conjugate-infinitive verb)))
+;(ttt:store-pred 'infinitive? #'infinitive?)
 
 ;; Convenience functions (also for TTT).
 (defun vp-to-past-participle! (vp)
   (vp-to-participle! vp :part-type 'PAST))
+;(ttt:store-pred 'vp-to-past-participle! #'vp-to-past-participle!)
 (defun vp-to-present-participle! (vp)
   (vp-to-participle! vp :part-type 'PRESENT))
+;(ttt:store-pred 'vp-to-present-participle! #'vp-to-present-participle!)
 
 
 (defparameter *plur2surface*
@@ -359,22 +380,27 @@
 ; ..))
   (let ((num (if (plur-term? subj) 'PL 'SG))
         (hv (ulf:find-vp-head vp))
-        tense conjugated lex-verb)
+        tense conjugated lex-verb pkg)
     (setq tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
     (setq lex-verb (if tense (second hv) hv))
-    (multiple-value-bind (word _1) (split-by-suffix lex-verb)
-      (declare (ignore _1))
-      (setq conjugated
-            (add-suffix
-              (intern
-                (if tense
-                  (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num)
-                  (pattern-en-conjugate (string word) :number num)))
-              ;suffix))
-              ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
-              'vp-head))
-      (ulf:replace-vp-head vp conjugated))))
-
+    (if (not (null lex-verb))
+      (progn
+        (setf pkg (symbol-package lex-verb))
+        (multiple-value-bind (word _1) (split-by-suffix lex-verb)
+          (declare (ignore _1))
+          (setq conjugated
+                (add-suffix
+                  (intern
+                    (if tense
+                      (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num)
+                      (pattern-en-conjugate (string word) :number num))
+                    pkg)
+                ;suffix))
+                ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
+              'vp-head))))
+      (setf conjugated lex-verb))
+      (ulf:replace-vp-head vp conjugated)))
+;(ttt:store-pred 'conjugate-vp-head! #'conjugate-vp-head!)
 
 (defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
@@ -400,8 +426,10 @@
 ;; tensed variants.
 (defun prog2be! (proginst)
   (subst 'be.v 'prog proginst))
+;(ttt:store-pred 'prog2be! #'prog2be!)
 (defun perf2have! (perfinst)
   (subst 'have.v 'perf perfinst))
+;(ttt:store-pred 'perf2have! #'perf2have!)
 
 ;; All the prog handling rules.
 (defparameter *prog2surface*
@@ -491,12 +519,14 @@
 ;; noun form. It's meant for TTT mapping, hence the exclamation mark ending.
 (defun unrel-noun! (ulf)
   (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
-    (let ((wchars (util:split-into-atoms word))
+    (let ((pkg (symbol-package ulf))
+          (wchars (util:split-into-atoms word))
           (tchars (util:split-into-atoms suffix)))
       (util:fuse-into-atom
         (append (reverse (nthcdr 3 (reverse wchars)))
                 '(\.)
-                tchars)))))
+                tchars)
+        :pkg pkg))))
 
 
 ;; Converts relational nouns to versions closer to surface form. Implicit
@@ -576,7 +606,8 @@
     (list #'quotes2surface! "Handle quotes")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'(lambda (x) (mapcar #'util:sym2str x)) "Stringify symbols")
+    (list #'(lambda (x) (mapcar #'(lambda (y) (util:sym2str y)) x))
+          "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
     (list #'merge-det-thing-combos "Merge special determiner-noun combinations")
