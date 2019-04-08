@@ -606,7 +606,7 @@
     (list #'quotes2surface! "Handle quotes")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'(lambda (x) (mapcar #'(lambda (y) (util:sym2str y)) x))
+    (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
           "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
