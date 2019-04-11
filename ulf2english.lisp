@@ -42,7 +42,13 @@
       (ulf:is-strict-name? token)
       (member token '(that not and or to most))
       (not (symbolp token))))
-;(ttt:store-pred 'is-surface-token? #'is-surface-token?)
+
+
+(defun set-of-to-and (ulf)
+  (util:unhide-ttt-ops
+    (ttt:apply-rule
+      '(/ (set-of _+ _!) (_+ and.cc _!))
+      (util:hide-ttt-ops ulf))))
 
 
 (defun pluralize! (ulf)
@@ -73,7 +79,7 @@
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
              (plurhn (pluralize! hn)))
         (replace-np-head ulf plurhn)))))
-;(ttt:store-pred 'pluralize! #'pluralize!)
+
 
 
 (defun ulf-quote? (ulf)
@@ -86,13 +92,13 @@
     ((ulf-quote? ulf)
      (ulf2english (second ulf) :add-punct? nil :capitalize-front? nil))
     (t ulf)))
-;(ttt:store-pred 'quote2surface! #'quote2surface!)
+
 
 
 (defun quotes2surface! (ulf)
   (ttt:apply-rule '(/ (! ulf-quote?) (quote2surface! !)) ulf
                   :max-n 1000))
-;(ttt:store-pred 'quotes2surface! #'quotes2surface!)
+
 
 (defvar *superlative-special-case-alist*
   '((left.a . leftmost.a)
@@ -117,7 +123,7 @@
          suffix))))
     ;; Not something that can be turned superlative so just return.
     (t ulf)))
-;(ttt:store-pred 'lex-superlative! #'lex-superlative!)
+
 
 (defun ap-superlative! (apulf)
 ;`````````````````````
@@ -133,8 +139,11 @@
           (declare (ignore _3))
           newap))
       (t (list 'most apulf)))))
-;(ttt:store-pred 'ap-superlative! #'ap-superlative!)
 
+
+;(defparameter *special-ulf-verb-tensing*
+;  '(((past be-to.aux-v) . was.aux-v)
+;    ((past be-to.aux-s) . was.aux-s)
 
 (defun add-tense! (ulf)
 ;``````````````````````
@@ -160,7 +169,6 @@
            suffix))))
     ;; Ignore all other cases for now.
     (t ulf)))
-;(ttt:store-pred 'add-tense! #'add-tense!)
 
 
 (defun dumb-ppart (word)
@@ -197,7 +205,6 @@
        (list (list (first ulf) (first tenseless))
              (second tenseless))))
     (t ulf)))
-;(ttt:store-pred 'pasv2surface! #'pasv2surface!)
 
 
 (defun verb-to-participle (verb &key (part-type 'PRESENT) (force nil))
@@ -223,16 +230,18 @@
      (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
        (let ((pkg (symbol-package verb)))
          (ulf:add-suffix
-           (intern (pattern-en-conjugate (string word) :tense part-type
-                                         :aspect 'PROGRESSIVE)
-                   pkg)
+           (cond
+             ((and (eql word 'forsee) (eql part-type 'past)) 'forseen)
+             (t
+               (intern (pattern-en-conjugate (string word) :tense part-type
+                                             :aspect 'PROGRESSIVE)
+                       pkg)))
            suffix))))
     (t verb)))
 
 
 (defun verb-to-past-participle! (verb)
   (verb-to-participle verb :part-type 'PAST))
-;(ttt:store-pred 'verb-to-past-participle! #'verb-to-past-participle!)
 
 (defun verb-to-present-participle! (verb)
 ;`````````````````````````````````
@@ -240,7 +249,7 @@
 ;  run.v -> running.v
 ;  is.v -> being.v
   (verb-to-participle verb :part-type 'PRESENT))
-;(ttt:store-pred 'verb-to-present-participle! #'verb-to-present-participle!)
+
 
 (defun vp-to-participle! (vp &key (part-type nil))
 ;```````````````````````````````
@@ -284,7 +293,7 @@
        (ulf:replace-vp-head vp participle)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
-;(ttt:store-pred 'vp-to-participle! #'vp-to-participle!)
+
 
 (defun conjugate-infinitive (verb)
   (if (not (atom verb))
@@ -299,15 +308,15 @@
 
 (defun infinitive? (verb)
   (equal verb (conjugate-infinitive verb)))
-;(ttt:store-pred 'infinitive? #'infinitive?)
+
 
 ;; Convenience functions (also for TTT).
 (defun vp-to-past-participle! (vp)
   (vp-to-participle! vp :part-type 'PAST))
-;(ttt:store-pred 'vp-to-past-participle! #'vp-to-past-participle!)
+
 (defun vp-to-present-participle! (vp)
   (vp-to-participle! vp :part-type 'PRESENT))
-;(ttt:store-pred 'vp-to-present-participle! #'vp-to-present-participle!)
+
 
 
 (defparameter *plur2surface*
@@ -323,25 +332,26 @@
   '(/ (!1 (pasv _!))
       (pasv2surface! !1)))
 (defparameter *tense-n-number2surface*
-  '(/ ((!1 term?) (*1 phrasal-sent-op?) (!2 pred?))
-      (!1 *1 (conjugate-vp-head! !2 !1))))
-;; TODO: complete
-;; 1. add phrasal sent ops
-;; 2. deal with auxiliaries
+  '(/ ((!1 term?) (*1 phrasal-sent-op?)
+                  (!2 pred?)
+                  (*2 phrasal-sent-op?))
+      (!1 *1 (conjugate-vp-head! !2 !1) *2)))
 (defparameter *inv-copula-tense-n-number2surface*
   '(/ ((!1 (lex-tense? be.v))
        (*1 phrasal-sent-op?)
        (!2 term?)
        (*2 phrasal-sent-op?)
-       (!3 pred?))
-      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3)))
+       (!3 pred?)
+       (*3 phrasal-sent-op?))
+      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3 *3)))
 (defparameter *inv-aux-tense-n-number2surface*
   '(/ ((!1 (lex-tense? (! aux? have.v)))
        (*1 phrasal-sent-op?)
        (!2 term?)
        (*2 phrasal-sent-op?)
-       (!3 verb?))
-      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3)))
+       (!3 verb?)
+       (*3 phrasal-sent-op?))
+      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3 *3)))
 (defparameter *exist-there-tense-n-number2surface*
   '(/ (there.pro ((!1 (lex-tense? lex-verb?))
                   (*1 phrasal-sent-op?)
@@ -381,29 +391,47 @@
 ; Assumes there's no passive operator on the verb, since this should be appled
 ; after (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb>
 ; ..))
-  (let ((num (if (plur-term? subj) 'PL 'SG))
-        (hv (ulf:find-vp-head vp))
-        tense conjugated lex-verb pkg)
-    (setq tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
-    (setq lex-verb (if tense (second hv) hv))
-    (if (not (null lex-verb))
-      (progn
-        (setf pkg (symbol-package lex-verb))
-        (multiple-value-bind (word _1) (split-by-suffix lex-verb)
-          (declare (ignore _1))
-          (setq conjugated
-                (add-suffix
-                  (intern
-                    (if tense
-                      (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num)
-                      (pattern-en-conjugate (string word) :number num))
-                    pkg)
-                ;suffix))
-                ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
-              'vp-head))))
-      (setf conjugated lex-verb))
-      (ulf:replace-vp-head vp conjugated)))
-;(ttt:store-pred 'conjugate-vp-head! #'conjugate-vp-head!)
+  (let* ((num (if (plur-term? subj) 'PL 'SG))
+         (hv (ulf:find-vp-head vp))
+         (tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
+         (lex-verb (if tense (second hv) hv))
+         conjugated pkg)
+    (when (not (null lex-verb))
+      (setf pkg (symbol-package lex-verb))
+      (multiple-value-bind (word suffix) (split-by-suffix lex-verb)
+        ;; Special cases that still need conjugation.
+        (setf word
+              (case word
+                (be-to 'be)
+                (be-destined 'be)
+                (otherwise word)))
+        (setf
+          conjugated
+          (add-suffix
+            (cond
+              ;; TODO: figure out a way to generate 'was' and 'were' alternatives for
+              ;; (cf be.v). This needs to be integrated in general to the ulf2english
+              ;; function so we can add these alternatives at multiple points in the
+              ;; pipeline.
+              ;; Special cases that don't need conjugation.
+              ((eql word 'were) 'were)
+              ((eql word 'would) 'would)
+              ((eql word 'could) 'could)
+              ((and (eql word 'will) (member tense '(past cf))
+                    (member suffix '(aux aux-s aux-v)))
+               'would)
+              ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
+              ((not (is-surface-token? lex-verb)) word) ; {be}.v -> {be}.v
+              (t
+                (intern
+                  (if tense
+                    (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num)
+                    (pattern-en-conjugate (string word) :number num))
+                  pkg)))
+            ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
+            'vp-head))))
+    (ulf:replace-vp-head vp conjugated)))
+
 
 (defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
@@ -429,10 +457,10 @@
 ;; tensed variants.
 (defun prog2be! (proginst)
   (subst 'be.v 'prog proginst))
-;(ttt:store-pred 'prog2be! #'prog2be!)
+
 (defun perf2have! (perfinst)
   (subst 'have.v 'perf perfinst))
-;(ttt:store-pred 'perf2have! #'perf2have!)
+
 
 ;; All the prog handling rules.
 (defparameter *prog2surface*
@@ -580,6 +608,45 @@
      (string "?"))
     (t ".")))
 
+;; TODO: poss-by (see example (h) on page 34 of the guidelines)
+
+(defvar *post-processed-equivalencies*
+  '(;; Prepositional wh-relative clauses
+    ("(?i)at which" "when")
+    ("(?i)at time which" "when")
+    ("(?i)on which" "where")
+    ("(?i)at what place" "where")
+    ("(?i)at which place" "where")
+    ("(?i)at loc which" "where")
+    ("(?i)at what time" "when")
+    ("(?i)at which time" "when")
+    ("(?i)in what way" "how")
+    ("(?i)in which way" "how")
+    ("(?i)on what place" "whereon")
+    ("(?i)on which place" "whereon")
+    ("(?i)on loc which" "whereon")
+    ;; Emphatic wh-words
+    ("(?i)what em" "what")
+    ("(?i)how em" "how")
+    ;; whoever, whatever, wherever
+    ("any person" "whoever")
+    ("any one" "whoever")
+    ("any thing" "whatever")
+    ("any place" "wherever")
+    ))
+
+(defvar *general-equivalencies*
+  '(("anyone" "whoever")
+    ("anything" "whatever")
+    ("anywhere" "wherever")))
+
+;; Change this to generate all possible equivalencies.
+(defun apply-post-processed-equivalencies (str)
+  (reduce
+    #'(lambda (acc cur)
+        (re:regex-replace-all (first cur) acc (second cur)))
+    *post-processed-equivalencies* :initial-value str))
+
 
 ;; Input: a list of tokens.
 ;; Output: tokens with certain determiner-"thing"/"one" combinations merged.
@@ -604,6 +671,7 @@
 
 (defparameter *ulf2english-stages*
   (list ;; TODO: generalize this function to adding types to all the hole variables.
+    (list #'set-of-to-and "Set-of to and.cc")
     (list #'(lambda (x) (ulf:add-info-to-sub-vars x :calling-package :ulf2english))
           "Add type/plurality info to 'sub' variables")
     (list #'(lambda (x) (ulf:add-info-to-relativizers x :calling-package :ulf2english))
@@ -645,6 +713,7 @@
       (funcall (compose
                  (if add-punct? add-punct-fn idfn)
                  (if capitalize-front? #'capitalize-first idfn)
-                 #'capitalize-i)
+                 #'capitalize-i
+                 #'apply-post-processed-equivalencies)
                staged))))
 
