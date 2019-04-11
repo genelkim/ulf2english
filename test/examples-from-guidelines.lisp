@@ -36,13 +36,21 @@
 (define-test yes-no
   "Examples from the Yes-No subsection"
   (:tag :guidelines :yes-no)
-  (assert-equal "Yes" (ulf2english 'yes.yn))
-  (assert-equal "Uh-huh, that's the plan"
-                (ulf2english '(Uh-huh.yn (that.pro ((pres be.v) (the.d plan.n))))))
-  (assert-equal "Definitely yes"
-                (ulf2english '(Definitely.adv-s yes.yn)))
-  (assert-equal "Yes, definitely"
-                (ulf2english '(Yes.yn (pu definitely.adv-s))))
-  (assert-equal "Surprisingly, no"
-                (ulf2english '(Surprisingly.adv-s no.yn))))
+  (let ((strclean (util:compose #'cl-strings:clean
+                                #'remove-punctuation)))
+    (assert-equal (funcall strclean "Yes")
+                  (funcall strclean (ulf2english 'yes.yn)))
+
+    (let* ((expected (funcall strclean "Uh-huh, that's the plan"))
+           (generated (funcall strclean
+                              (ulf2english '(Uh-huh.yn (that.pro ((pres be.v) (the.d plan.n)))))))
+           (variants (util:contraction-possibilities generated)))
+      (assert-true (member expected variants :test #'equal)
+                   generated))
+    (assert-equal (funcall strclean "Definitely yes")
+                  (funcall strclean (ulf2english '(Definitely.adv-s yes.yn))))
+    (assert-equal (funcall strclean "Yes, definitely")
+                  (funcall strclean (ulf2english '(Yes.yn (pu definitely.adv-s)))))
+    (assert-equal (funcall strclean "Surprisingly, no")
+                  (funcall strclean (ulf2english '(Surprisingly.adv-s no.yn))))))
 
