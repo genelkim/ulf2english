@@ -8,30 +8,49 @@
 (setf *print-summary* t)
 (setf *summarize-results* t)
 
+(defun remove-commas (str)
+  (remove #\, str))
+
 (define-test counterfactuals
   "Examples from the section Counterfactuals & Conditionals"
   (:tag :guidelines :cf)
-  (assert-equal "I wish I was rich"
-                (ulf2english '(i.pro ((pres wish.v) (tht (i.pro ((cf be.v) rich.a)))))))
-  (assert-equal "I wish I believed you"
-                (ulf2english '(I.pro ((pres wish.v) (tht (I.pro ((cf believe.v) you.pro)))))))
-  (assert-equal "I wish I were rich"
-                (ulf2english '(I.pro ((pres wish.v) (tht (I.pro ((cf were.v) rich.a)))))))
-  (assert-equal "If I was rich, I would own a boat."
-                (ulf2english '((if.ps (I.pro ((cf be.v) rich.a)))
-                               (I.pro ((cf will.aux-s) (own.v (a.d boat.n)))))))
-  (assert-equal "Were he to leave, the project would collapse"
-                (ulf2english '(((cf be-destined.aux-v) he.pro leave.v)
-                               ((the.d project.n) ((cf will.aux-s) collapse.v)))))
-  (assert-equal "Had I forseen this, I would never have participated"
-                (ulf2english '(((cf perf) I.pro (forsee.v this.pro))
-                               (I.pro ((cf will.aux-s) never.adv-e (perf participate.v))))))
-  (assert-equal "If I had been rich, I would own a boat"
-                (ulf2english '((If.ps (I.pro ((cf perf) (be.v rich.a))))
-                               (I.pro ((pres would.aux-s) (own.v (a.d boat.n)))))))
-  (assert-equal "If I had been rich, then I would have owned a boat"
-                (ulf2english '((If.ps (I.pro ((cf perf) (be.v rich.a))))
-                               (then.adv-s (I.pro ((cf will.aux-s) (perf (own.v (a.d boat.n))))))))))
+  (let ((sent-ulf-pairs
+          '(("I wish I was rich"
+             (i.pro ((pres wish.v) (tht (i.pro ((cf be.v) rich.a))))))
+            ("I wish I believed you"
+             (I.pro ((pres wish.v) (tht (I.pro ((cf believe.v) you.pro))))))
+            ("I wish I were rich"
+             (I.pro ((pres wish.v) (tht (I.pro ((cf were.v) rich.a))))))
+            ("If I was rich, I would own a boat."
+             ((if.ps (I.pro ((cf be.v) rich.a)))
+              (I.pro ((cf will.aux-s) (own.v (a.d boat.n))))))
+            ("Were he to leave, the project would collapse"
+             (((cf be-destined.aux-v) he.pro leave.v)
+              ((the.d project.n) ((cf will.aux-s) collapse.v))))
+            ("Had I forseen this, I would never have participated"
+             (((cf perf) I.pro (forsee.v this.pro))
+              (I.pro ((cf will.aux-s) never.adv-e (perf participate.v)))))
+            ("If I had been rich, I would own a boat"
+             ((If.ps (I.pro ((cf perf) (be.v rich.a))))
+              (I.pro ((pres would.aux-s) (own.v (a.d boat.n))))))
+            ("If I had been rich, then I would have owned a boat"
+             ((If.ps (I.pro ((cf perf) (be.v rich.a))))
+              (then.adv-s (I.pro ((cf will.aux-s) (perf (own.v (a.d boat.n))))))))))
+        ;; We don't care about punctuation, casing or spaces in these tests.
+        (strclean (compose
+                    #'cl-strings:clean
+                    #'remove-punctuation)))
+      (mapcar
+        ;; For each pair, generate the ulf2english, clean the strings and compare.
+        #'(lambda (x)
+            (let ((expected (funcall strclean (first x)))
+                  (ulf (second x))
+                  generated)
+              (setf generated (funcall strclean (ulf2english ulf)))
+              (assert-equal expected generated
+                            expected generated ulf)))
+        sent-ulf-pairs)))
+
 
 (define-test yes-no
   "Examples from the Yes-No subsection"
@@ -53,4 +72,110 @@
                   (funcall strclean (ulf2english '(Yes.yn (pu definitely.adv-s)))))
     (assert-equal (funcall strclean "Surprisingly, no")
                   (funcall strclean (ulf2english '(Surprisingly.adv-s no.yn))))))
+
+(define-test emphatic-wh
+  "Examples from the Exclamatory/Emphatic Wh-words section"
+  (:tag :guidelines :emphatic-wh)
+  (let ((sent-ulf-pairs
+          '(("What a beautiful car that is!"
+             (sub (= (What-em.d (= (a.d (beautiful.a car.n)))))
+                  (that.pro ((pres be.v) *h))))
+            ("What beautiful cars these are"
+             (sub (= (What-em.d (beautiful.a (plur car.n))))
+                  (these.pro ((pres be.v) *h))))
+            ("What a strong person he is"
+             (sub (= (What-em.d (= (a.d (strong.a person.n)))))
+                  (he.pro ((pres be.v) *h))))
+            ("What smart kids you are"
+             (sub (= (What-em.d (smart.a (plur kid.n))))
+                  (you.pro ((pres be.v) *h))))
+            ("What a mess he made!"
+             (sub (What-em.d (= (a.d mess.n)))
+                  (he.pro ((past make.v) *h))))
+            ("What a beautiful car!"
+             (sub (= (What-em.d (= (a.d (beautiful.a car.n)))))
+                  ({that}.pro ((pres {be}.v) *h))))
+            ("What an idea!"
+             (sub (= (What-em.d (= (an.d idea.n))))
+                  ({that}.pro ((pres {be}.v) *h))))
+            ("What a charming actress!"
+             (sub (= (What-em.d (= (a.d (charming.a actress.n)))))
+                  ({she}.pro ((pres {be}.v) *h))))
+            ("What a bunch of beautiful pictures!"
+             (sub (= (What-em.d (= (a.d (n+preds bunch.n
+                                                 (of.p (k (beautiful.a
+                                                            (plur picture.n)))))))))
+                  ({those}.pro ((pres {be}.v) *h))))
+            ("What a beautiful car you bought!"
+             (sub (What-em.d (= (a.d (beautiful.a car.n))))
+                  (you.pro ((past buy.v) *h))))
+            ("How studious he is!"
+             (sub (How-em.mod-a studious.a) (he.pro ((pres be.v) *h))))
+            ("How curious they are!"
+             (sub (How-em.mod-a curious.a) (they.pro ((pres be.v) *h))))
+            ("How strange!"
+             (sub (How-em.mod-a strange.a) ({that}.pro ((pres {be}.v) *h))))
+            ("How I used to enjoy this!"
+             (sub How-em.adv-a (I.pro (((past use.v) (to (enjoy.v this.pro))) *h))))
+            ("You should see what beautiful car he bought"
+             (You.pro ((pres should.aux-v) (see.v
+                                             (ans-to (sub (what.d (beautiful.a car.n))
+                                                          (he.pro ((past buy.v) *h))))))))
+            ("You should see what a beautiful car he bought"
+             (You.pro ((pres should.aux-v) (see.v
+                                             (ans-to (sub (What-em.d (= (a.d (beautiful.a car.n))))
+                                                          (he.pro ((past buy.v) *h))))))))
+            ("You should see what model of car he bought"
+             (You.pro ((pres should.aux-v) (see.v
+                                             (ans-to (sub (what.d (n+preds (model-of.n (k car.n))))
+                                                          (he.pro ((past buy.v) *h))))))))
+            ("I know in how deep a financial hole he now is, because of his risky investments"
+             (I.pro ((pres know.v) (ans-to
+                                     (sub (in.p (sub (how.mod-a deep.a)
+                                                     (a.d (*h (financial.a hole.n)))))
+                                          (he.pro now.adv-e ((pres be.v) *h)
+                                                  (adv-s (because_of.p
+                                                           (his.d (risky.a (plur investment.n)))))))))))
+            ("In how deep a financial hole he now is, because of his risky investments!"
+             (sub (In.p (sub (how-em.mod-a deep.a)
+                             (a.d (*h (financial.a hole.n)))))
+                  (he.pro now.adv-e ((pres be.v) *h)
+                          (adv-s (because_of.p
+                                   (his.d (risky.a (plur investment.n))))))))))
+        (strclean (compose
+                    #'cl-strings:clean
+                    #'remove-punctuation)))
+    (mapcar
+        ;; For each pair, generate the ulf2english, clean the strings and compare.
+        #'(lambda (x)
+            (let ((expected (funcall strclean (first x)))
+                  (ulf (second x))
+                  generated)
+              (setf generated (funcall strclean (ulf2english ulf)))
+              (assert-equal expected generated
+                            expected generated ulf)))
+        sent-ulf-pairs)))
+
+
+(define-test imperatives
+  "Imperative examples from the guidelines"
+  (:tag :guidelines :imperatives)
+  (let ((sent-ulf-pairs
+          '(("Go home!"
+             (({you}.pro ((pres go.v) (k home.n))) !))
+            ("John, go home!"
+             ((voc |John|) ({you}.pro ((pres go.v) (k home.n))) !))))
+        (strclean (compose
+                    #'cl-strings:clean
+                    #'remove-commas)))
+    (mapcar
+      ;; For each pair, generate the ulf2english, clean the strings and compare.
+      #'(lambda (x)
+          (let ((expected (funcall strclean (first x)))
+                (ulf (second x))
+                generated)
+            (setf generated (funcall strclean (ulf2english ulf)))
+            (assert-equal expected generated
+                          expected generated ulf)))
+      sent-ulf-pairs)))
 
