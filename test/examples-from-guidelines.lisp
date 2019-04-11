@@ -179,3 +179,40 @@
                           expected generated ulf)))
       sent-ulf-pairs)))
 
+(define-test domain-specific
+  "Examples from the domain specific section in the ULF guidelines"
+  (:tag :guidelines :ds)
+  (let ((sent-ulf-pairs
+          '(("555 555-5555" (ds phone-number "555 555-5555"))
+            ("(555)555-5555" (ds phone-number "(555)555-5555"))
+            ("5555555" (ds phone-number "5555555"))
+            ("5:30pm" (ds date-time "5:30pm"))
+            ("June 18th 2017" (ds date-time "June 18th 2017"))
+            ("quarter after 3" (ds date-time "quarter after 3"))
+            ("$50.12" (ds currency "$50.12"))
+            ("Fifty dollars and 12 cents" (ds currency "Fifty dollars and 12 cents"))
+            ("e30" (ds currency "e30"))
+            ("880 Linden Ave" (ds address "880 Linden Ave"))
+            ("Rochester NY 14620" (ds address "Rochester NY 14620"))
+            ("bonjour monsieur" (ds fws "bonjour monsieur"))
+            ("君の名は" (ds fws "君の名は"))
+            ("dm-drogerie markt" (ds fws "dm-drogerie markt"))
+            ("5 degrees Celsius" (ds temp "5 degrees Celsius"))
+            ("5'11¨" (ds length "5'11¨"))
+            ("seven meters" (ds length "seven meters"))
+            ("80km" (ds length "80km"))
+            ("17kph" (ds speed "17kph"))
+            ("50mile per hour" (ds speed "50mile per hour"))
+            ("8.2 m/s" (ds speed "8.2 m/s"))
+            ("whhhatre yooooouuuuse doeeeein" (ds unk "whhhatre yooooouuuuse doeeeein")))))
+    (mapcar
+      ;; For each pair, generate the ulf2english, clean the strings and compare.
+      #'(lambda (x)
+          (let ((expected (first x))
+                (ulf (second x))
+                generated)
+            (setf generated (ulf2english ulf :add-punct? nil :capitalize-front? nil))
+            (assert-equal expected generated
+                          expected generated ulf)))
+      sent-ulf-pairs)))
+
