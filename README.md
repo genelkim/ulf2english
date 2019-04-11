@@ -4,12 +4,12 @@ Maps ULFs to English sentences.
 ## Dependencies
 - Quicklisp
 - [ASDF version 3 or above](https://common-lisp.net/project/asdf/archives/asdf.lisp)
-- TTT (get a copy at http://cs.rochester.edu/u/gkim21/data/ttt.tar.gz)
+- [TTT](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
 - [cl-util](https://github.com/genelkim/cl-util)
+- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through install-pattern-en.sh
 - cl-strings (loaded automatically via quicklisp)
 - lisp-unit (loaded automatically via quicklisp)
-- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through install-pattern-en.sh
 - drakma (loaded automatically via quicklisp)
 - cl-json (loaded automatically via quicklisp)
 
@@ -122,9 +122,4 @@ When you encounter this, please select the restart action 0 by typing
 `:continue 0`. I'm pretty sure this error comes from the fact that the library
 being loaded is for 64-bit common lisp where as the Express Edition of ACL is
 32-bit.
-
-## TODO
-
-- [ ] Add a pattern-en server start-up function in ulf2english
-- [ ] Generalize the socket interface to pattern-en to be useable more generally
 
