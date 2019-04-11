@@ -102,7 +102,7 @@
             ("Why are ye fearful, O ye of little faith?"
              (((Why.adv-s ((pres be.v) ye.pro fearful.a))
                (voc-O (np+preds ye.pro (of.p (little.a faith.n))))) ?))))
-        (strclean #'cl-strings:clean)
+        (strclean #'cl-strings:clean))
     (mapcar
       ;; for each pair, generate the ulf2english and compare
       #'(lambda (x)

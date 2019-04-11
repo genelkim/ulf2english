@@ -5,6 +5,9 @@
 
 (defparameter *debug-ulf2english* nil)
 
+;; Give cl-ppcre a nickname.
+(add-nickname "CL-PPCRE" "RE")
+
 ;; Post formats a ULF-to-string mapping.
 ;; If it is a name (e.g. |John|), the pipes are stripped off.
 ;; If not a name replace dash and underscores with spaces.
@@ -510,6 +513,10 @@
         copy)))
 
 
+(defun capitalize-i (string)
+  (re:regex-replace-all "\\bi\\b" string "I"))
+
+
 (defun add-punct-curried (punct)
   (lambda (sent)
     (cl-strings:join (list sent punct) :separator "")))
@@ -637,6 +644,7 @@
                            *ulf2english-stages* :initial-value ulf))
       (funcall (compose
                  (if add-punct? add-punct-fn idfn)
-                 (if capitalize-front? #'capitalize-first idfn))
+                 (if capitalize-front? #'capitalize-first idfn)
+                 #'capitalize-i)
                staged))))
 
