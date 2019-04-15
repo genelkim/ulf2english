@@ -383,6 +383,14 @@
   '(/ (most (!1 adj?) (*2 phrasal-sent-op?))
       ((ap-superlative! !1) *2)))
 
+(defun subj2person! (subj)
+  (if (atom subj)
+    (cond
+      ((eq subj 'i.pro) 1)
+      ((eq subj 'we.pro) 1)
+      ((eq subj 'you.pro) 2)
+      (t 3))
+    3))
 
 (defun conjugate-vp-head! (vp subj)
 ;``````````````````````````
@@ -392,6 +400,7 @@
 ; after (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb>
 ; ..))
   (let* ((num (if (plur-term? subj) 'PL 'SG))
+         (pers (subj2person! subj))
          (hv (ulf:find-vp-head vp))
          (tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
          (lex-verb (if tense (second hv) hv))
@@ -425,7 +434,7 @@
               (t
                 (intern
                   (if tense
-                    (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num)
+                    (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num :person pers)
                     (pattern-en-conjugate (string word) :number num))
                   pkg)))
             ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
