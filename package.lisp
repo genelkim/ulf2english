@@ -5,6 +5,7 @@
 
 (defpackage :ulf2english
   (:use :cl :ttt :cl-strings :cl-json :cl-util :ulf-lib :inferior-shell :lisp-unit :drakma)
+  (:shadow :insert)
   (:shadowing-import-from :cl-ppcre)
   (:export ulf2english))
 
