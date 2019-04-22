@@ -385,12 +385,15 @@
 
 (defun subj2person! (subj)
   (if (atom subj)
-    (cond
-      ((eq subj 'i.pro) 1)
-      ((eq subj 'we.pro) 1)
-      ((eq subj 'you.pro) 2)
-      (t 3))
-    3))
+    (let ((subj+ (ulf:make-explicit! subj)))
+      (cond
+        ;; ULF doesn't actually care about the i/me distinction in its symbols,
+        ;; so we allow both. Based on the position in the ULF formula we can
+        ;; determine if it's the subject.
+        ((member subj+ '(i.pro me.pro we.pro us.pro)) 1)
+        ((member subj+ '(you.pro ye.pro)) 2)
+        (t 3)))
+      3))
 
 (defun conjugate-vp-head! (vp subj)
 ;``````````````````````````
