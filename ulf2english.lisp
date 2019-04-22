@@ -36,12 +36,12 @@
 ;;   2 -> t
 ;;   "a" -> t
 (defun is-surface-token? (token)
-  (or (and (ulf:has-suffix? token)
+  (or (not (symbolp token))
+      (and (ulf:has-suffix? token)
            (not (ulf:lex-elided? token))
            (not (ulf:lex-hole-variable? token)))
       (ulf:is-strict-name? token)
-      (member token '(that not and or to most))
-      (not (symbolp token))))
+      (member token '(that not and or to most))))
 
 
 (defun set-of-to-and (ulf)
@@ -300,11 +300,12 @@
     verb
     (multiple-value-bind (word suffix) (split-by-suffix verb)
       (let ((pkg (symbol-package verb)))
-      (add-suffix
-        (intern
-          (pattern-en-conjugate (string word) :tense 'infinitive)
-          pkg)
-        suffix)))))
+        (safe-intern
+          (ulf:add-suffix
+          (intern
+            (pattern-en-conjugate (string word) :tense 'infinitive)
+            pkg)
+          suffix) pkg)))))
 
 (defun infinitive? (verb)
   (equal verb (conjugate-infinitive verb)))
