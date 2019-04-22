@@ -438,7 +438,7 @@
                 (intern
                   (if tense
                     (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num :person pers)
-                    (pattern-en-conjugate (string word) :number num))
+                    (pattern-en-conjugate (string word) :number num :person pers))
                   pkg)))
             ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
             'vp-head))))
