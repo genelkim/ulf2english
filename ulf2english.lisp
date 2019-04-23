@@ -73,7 +73,7 @@
              ;; Otherwise ignore case.
              (t (intern (pattern-en-pluralize (string word) :preserve-case nil)
                         pkg)))
-           suffix))))
+           suffix :pkg pkg))))
     ;; NP case.
     (t
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
@@ -94,11 +94,21 @@
     (t ulf)))
 
 
-
 (defun quotes2surface! (ulf)
   (ttt:apply-rule '(/ (! ulf-quote?) (quote2surface! !)) ulf
                   :max-n 1000))
 
+(defun post-poss? (ulf)
+  (and (listp ulf) (= (length ulf) 2)
+       (eql (first ulf) 'quote) (eql (second ulf) 's)))
+
+(defun post-poss2surface! (ulf)
+  (declare (ignore ulf))
+  '|'s|)
+
+(defun post-posses2surface! (ulf)
+  (ttt:apply-rule '(/ (! post-poss?) (post-poss2surface! !)) ulf
+                  :max-n 1000))
 
 (defvar *superlative-special-case-alist*
   '((left.a . leftmost.a)
@@ -120,7 +130,7 @@
        (ulf:add-suffix
          (intern (pattern-en-superlative (string-downcase (string word)))
                  pkg)
-         suffix))))
+         suffix :pkg pkg))))
     ;; Not something that can be turned superlative so just return.
     (t ulf)))
 
@@ -166,7 +176,7 @@
          (ulf:add-suffix
            (intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
                    pkg)
-           suffix))))
+           suffix :pkg pkg))))
     ;; Ignore all other cases for now.
     (t ulf)))
 
@@ -236,7 +246,7 @@
                (intern (pattern-en-conjugate (string word) :tense part-type
                                              :aspect 'PROGRESSIVE)
                        pkg)))
-           suffix))))
+           suffix :pkg pkg))))
     (t verb)))
 
 
@@ -300,12 +310,11 @@
     verb
     (multiple-value-bind (word suffix) (split-by-suffix verb)
       (let ((pkg (symbol-package verb)))
-        (safe-intern
-          (ulf:add-suffix
+        (ulf:add-suffix
           (intern
             (pattern-en-conjugate (string word) :tense 'infinitive)
             pkg)
-          suffix) pkg)))))
+          suffix :pkg pkg)))))
 
 (defun infinitive? (verb)
   (equal verb (conjugate-infinitive verb)))
@@ -442,7 +451,7 @@
                     (pattern-en-conjugate (string word) :number num :person pers))
                   pkg)))
             ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
-            'vp-head))))
+            'vp-head :pkg pkg))))
     (ulf:replace-vp-head vp conjugated)))
 
 
@@ -692,6 +701,7 @@
     (list #'contextual-preprocess "Contextual preprocess")
     (list #'add-morphology "Adding morphology")
     (list #'quotes2surface! "Handle quotes")
+    (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
     (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
