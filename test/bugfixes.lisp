@@ -120,10 +120,12 @@
   "Named predicate error detected during ulf inference experiments."
   (:tag :bugfixes :named-predicates)
   (let ((sent-ulf-pairs
-          '(("Name Li'l Abner 's favorite Indian drink"
+          '(("name Li'l Abner 's favorite Indian drink"
              (({YOU}.PRO
                 ((PRES NAME.V) ((|Li'l Abner| 'S) (FAVORITE.A (|Indian.A| DRINK.N)))))
-              !))))
+              !))
+            ("pollster Robert M. Teeter"
+             ({THE}.D (N+PREDS POLLSTER.N (= |Robert M. Teeter|))))))
         (strclean #'identity))
     (mapcar
       ;; for each pair, generate the ulf2english and compare
@@ -131,7 +133,9 @@
           (let ((expected (funcall strclean (first x)))
                 (ulf (second x))
                 generated variants)
-            (setf generated (funcall strclean (ulf2english ulf)))
+            (setf generated (funcall strclean (ulf2english ulf
+                                                           :add-punct? nil
+                                                           :capitalize-front? nil)))
             (setf variants (util:contraction-possibilities generated))
             (assert-true (member expected variants :test #'equal)
                          generated ulf)))

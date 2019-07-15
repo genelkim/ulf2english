@@ -10,7 +10,7 @@
 (defvar *python-call-methods* '(socket shell))
 
 (defun ulf2pen-tense (tense)
-  (case tense
+  (case (util:safe-intern tense :ulf2english)
     (pres 'present)
     (past 'past)
     (cf 'past)

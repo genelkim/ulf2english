@@ -35,13 +35,14 @@
 ;;   {man}.n -> nil
 ;;   2 -> t
 ;;   "a" -> t
-(defun is-surface-token? (token)
-  (or (not (symbolp token))
-      (and (ulf:has-suffix? token)
-           (not (ulf:lex-elided? token))
-           (not (ulf:lex-hole-variable? token)))
-      (ulf:is-strict-name? token)
-      (member token '(that not and or to most))))
+(defun is-surface-token? (token+)
+  (let ((token (util:safe-intern token+ :ulf2english)))
+    (or (not (symbolp token))
+        (and (ulf:has-suffix? token)
+             (not (ulf:lex-elided? token))
+             (not (ulf:lex-hole-variable? token)))
+        (ulf:is-strict-name? token)
+        (member token '(that not and or to most some all every whether if)))))
 
 
 (defun set-of-to-and (ulf)
@@ -174,8 +175,18 @@
             (pkg (symbol-package verb)))
        (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
          (ulf:add-suffix
-           (intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
-                   pkg)
+           (cond
+             ((eql word 'were) 'were) ; TODO: this is repeated from conjugate-vp-head!, factorize into a seaprate function.  add a separate function conjugate-tensed-lex-verb...
+             ((eql word 'would) 'would)
+             ((eql word 'could) 'could)
+             ((eql word 'should) 'should)
+             ((and (eql word 'will) (member tense '(past cf))
+                   (member suffix '(aux aux-s aux-v)))
+              'would)
+             ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
+             ((not (is-surface-token? verb)) word) ; {be}.v -> {be}.v
+             (t (safe-intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
+                             pkg)))
            suffix :pkg pkg))))
     ;; Ignore all other cases for now.
     (t ulf)))
@@ -327,7 +338,25 @@
 (defun vp-to-present-participle! (vp)
   (vp-to-participle! vp :part-type 'PRESENT))
 
+(defun term-to-subj! (term)
+  (case term
+    (me.pro 'i.pro)
+    (us.pro 'we.pro)
+    (her.pro 'she.pro)
+    (him.pro 'he.pro)
+    (them.pro 'they.pro)
+    (whom.pro 'who.pro)
+    (otherwise term)))
 
+(defun term-to-obj! (term)
+  (case term
+    (i.pro 'me.pro)
+    (we.pro 'us.pro)
+    (she.pro 'her.pro)
+    (he.pro 'him.pro)
+    (they.pro 'them.pro)
+    (whom.pro 'who.pro)
+    (otherwise term)))
 
 (defparameter *plur2surface*
   '(/ (plur _!)
@@ -345,7 +374,7 @@
   '(/ ((!1 term?) (*1 phrasal-sent-op?)
                   (!2 pred?)
                   (*2 phrasal-sent-op?))
-      (!1 *1 (conjugate-vp-head! !2 !1) *2)))
+      ((term-to-subj! !1) *1 (conjugate-vp-head! !2 !1) *2)))
 (defparameter *inv-copula-tense-n-number2surface*
   '(/ ((!1 (lex-tense? be.v))
        (*1 phrasal-sent-op?)
@@ -353,7 +382,7 @@
        (*2 phrasal-sent-op?)
        (!3 pred?)
        (*3 phrasal-sent-op?))
-      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3 *3)))
+      ((conjugate-vp-head! !1 !2) *1 (term-to-subj! !2) *2 !3 *3)))
 (defparameter *inv-aux-tense-n-number2surface*
   '(/ ((!1 (lex-tense? (! aux? have.v)))
        (*1 phrasal-sent-op?)
@@ -361,7 +390,7 @@
        (*2 phrasal-sent-op?)
        (!3 verb?)
        (*3 phrasal-sent-op?))
-      ((conjugate-vp-head! !1 !2) *1 !2 *2 !3 *3)))
+      ((conjugate-vp-head! !1 !2) *1 (term-to-subj! !2) *2 !3 *3)))
 (defparameter *exist-there-tense-n-number2surface*
   '(/ (there.pro ((!1 (lex-tense? lex-verb?))
                   (*1 phrasal-sent-op?)
@@ -439,13 +468,14 @@
               ((eql word 'were) 'were)
               ((eql word 'would) 'would)
               ((eql word 'could) 'could)
+              ((eql word 'should) 'should)
               ((and (eql word 'will) (member tense '(past cf))
                     (member suffix '(aux aux-s aux-v)))
                'would)
               ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
               ((not (is-surface-token? lex-verb)) word) ; {be}.v -> {be}.v
               (t
-                (intern
+                (safe-intern
                   (if tense
                     (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num :person pers)
                     (pattern-en-conjugate (string word) :number num :person pers))
@@ -459,8 +489,8 @@
 ;`````````````````````````````````````````````
 ; Transform noun and np post-modifying verbs to present-pariciple
 ; form. E.g. (n+preds man.n walk.v) ->
-  '(/ ((!1 n+preds np+preds n+post) _!2 _+3)
-      (!1 _!2 (vp-to-participle! _+3))))
+  '(/ ((!1 n+preds np+preds n+post) _!2 _*3 (!4 verb? tensed-verb?) _*5)
+      (!1 _!2 _*3 (vp-to-participle! !4) _*5)))
 
 (defparameter *participle-for-mod-x*
   '(/ ((!1 mod-n mod-a) (!2 verb?))
