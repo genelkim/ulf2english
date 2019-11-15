@@ -720,6 +720,31 @@
            ;; Otherwise, just build up the list again.
            (cons cur rec))))))
 
+;; TODO(gene): hmmm... these need to be earlier since they need to be at sentence level.
+;; Input: a list of input symbols
+;; Output: a list of symbols with commas inserted in appropriate positions
+;;
+;; Ex. '
+(defun insert-commas! (syms)
+  (labels
+    ((helper (seq acc idx)
+       (cond
+         ((null seq) acc)
+         ;; If first index, no comma is ever inserted.
+         ((= idx 0) 
+          (helper (cdr seq) (cons (first seq) acc) (+ idx 1)))
+         ;; If it's a coordinator or sentential preposition, insert comma beforehand.
+         ((or (ulf:lex-coord? (first seq))
+              (ulf:lex-ps? (first seq)))
+          (helper (cdr seq)
+                  (cons (first seq) (cons ', acc))
+                  (+ idx 1)))
+         ;; Otherwise, just recurse.
+         (t 
+          (helper (cdr seq) (cons (first seq) acc) (+ idx 1)))))
+     ) ; end of labels definitions.
+    ;; Top level fn.
+    (reverse (helper syms nil 0))))
 
 (defparameter *ulf2english-stages*
   (list ;; TODO: generalize this function to adding types to all the hole variables.
@@ -734,12 +759,14 @@
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
+    (list #'insert-commas! "Insert commas")
     (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
           "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
     (list #'merge-det-thing-combos "Merge special determiner-noun combinations")
-    (list #'(lambda (x) (cl-strings:join x :separator " ")) "Glue together")))
+    (list #'(lambda (x) (cl-strings:join x :separator " ")) "Glue together")
+    (list #'remove-precomma-spaces! "Remove spaces before commas")))
 
 
 ;; Maps a ULF formula to a corresponding surface string.
