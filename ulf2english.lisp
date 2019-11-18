@@ -184,6 +184,7 @@
                    (member suffix '(aux aux-s aux-v)))
               'would)
              ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
+             ((and (eql word 'leave) (eql tense 'past)) 'left)
              ((not (is-surface-token? verb)) word) ; {be}.v -> {be}.v
              (t (safe-intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
                              pkg)))
@@ -253,6 +254,7 @@
          (ulf:add-suffix
            (cond
              ((and (eql word 'forsee) (eql part-type 'past)) 'forseen)
+             ((and (eql word 'leave) (eql part-type 'past)) 'left)
              (t
                (intern (pattern-en-conjugate (string word) :tense part-type
                                              :aspect 'PROGRESSIVE)
@@ -473,6 +475,7 @@
                     (member suffix '(aux aux-s aux-v)))
                'would)
               ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
+              ((and (eql word 'leave) (eql tense 'past)) 'left)
               ((not (is-surface-token? lex-verb)) word) ; {be}.v -> {be}.v
               (t
                 (safe-intern
