@@ -184,6 +184,7 @@
                    (member suffix '(aux aux-s aux-v)))
               'would)
              ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
+             ((and (eql word 'leave) (eql tense 'past)) 'left)
              ((not (is-surface-token? verb)) word) ; {be}.v -> {be}.v
              (t (safe-intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
                              pkg)))
@@ -253,6 +254,7 @@
          (ulf:add-suffix
            (cond
              ((and (eql word 'forsee) (eql part-type 'past)) 'forseen)
+             ((and (eql word 'leave) (eql part-type 'past)) 'left)
              (t
                (intern (pattern-en-conjugate (string word) :tense part-type
                                              :aspect 'PROGRESSIVE)
@@ -441,6 +443,12 @@
 ; Assumes there's no passive operator on the verb, since this should be appled
 ; after (tense (pasv <verb>)) is expanded to ((tense be.v) (<past part verb>
 ; ..))
+  ;; Recurse if a conjoined verb phrases instead of entering main function body.
+  (when (and (listp vp) (some (lambda (x) (lex-coord? x)) vp))
+    (return-from
+      conjugate-vp-head!
+      (mapcar #'(lambda (v) (if (lex-coord? v) v (conjugate-vp-head! v subj)))
+              vp)))
   (let* ((num (if (plur-term? subj) 'PL 'SG))
          (pers (subj2person! subj))
          (hv (ulf:find-vp-head vp))
@@ -473,6 +481,7 @@
                     (member suffix '(aux aux-s aux-v)))
                'would)
               ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
+              ((and (eql word 'leave) (eql tense 'past)) 'left)
               ((not (is-surface-token? lex-verb)) word) ; {be}.v -> {be}.v
               (t
                 (safe-intern
@@ -720,31 +729,94 @@
            ;; Otherwise, just build up the list again.
            (cons cur rec))))))
 
-;; TODO(gene): hmmm... these need to be earlier since they need to be at sentence level.
-;; Input: a list of input symbols
-;; Output: a list of symbols with commas inserted in appropriate positions
+;; Input: a list of tokens.
+;; Output: tokens with commas merged with prior words.
+(defun remove-precomma-spaces! (tokens)
+  (cond
+    ((null tokens) nil)
+    (t (let* ((rec (remove-precomma-spaces! (cdr tokens)))
+              (cur (car tokens))
+              (toprec (car rec)))
+         (if (equal toprec ",")
+           (cons (cl-strings:join (list cur toprec)) (cdr rec))
+           (cons cur rec))))))
+
+
+;; Input: ULF (possibly with morphological markings incorporated).
+;; Output: ULF with commas added flatly.
 ;;
-;; Ex. '
-(defun insert-commas! (syms)
+;; Ex. (when.ps Sent1 Sent2) -> (when.ps Sent1 \, Sent2)
+(defun non-atom? (x)
+  (not (atom x)))
+(defun add-comma-to-coord! (x)
   (labels
-    ((helper (seq acc idx)
+    ((helper (in acc)
        (cond
-         ((null seq) acc)
-         ;; If first index, no comma is ever inserted.
-         ((= idx 0) 
-          (helper (cdr seq) (cons (first seq) acc) (+ idx 1)))
-         ;; If it's a coordinator or sentential preposition, insert comma beforehand.
-         ((or (ulf:lex-coord? (first seq))
-              (ulf:lex-ps? (first seq)))
-          (helper (cdr seq)
-                  (cons (first seq) (cons ', acc))
-                  (+ idx 1)))
-         ;; Otherwise, just recurse.
-         (t 
-          (helper (cdr seq) (cons (first seq) acc) (+ idx 1)))))
-     ) ; end of labels definitions.
-    ;; Top level fn.
-    (reverse (helper syms nil 0))))
+         ((null in) (reverse acc))
+         ((lex-coord? (first in))
+          (helper (cddr in) (append (list (second in) (first in) '\,)
+                                    acc)))
+         (t (helper (cdr in) (append (list (first in) '\,)
+                                     acc))))))
+    (cons (first x) (helper (cdr x) nil))))
+;; Returns whether this is a coordination that requires the insertion of commas.
+;; There seems to be a TTT bug that is causing the corresponding TTT rule to not
+;; match.
+(defun comma-needing-large-coord? (ulf)
+  ;; TODO(gene): add handling for sentential cases...
+  ;;             this is a bit tricky because the morphological insertions makes the basic ULF type predicates
+  ;;             from ulf-lib to fail.
+  (and (listp ulf)
+       (> (length ulf) 3)
+       (lex-coord? (nth (- (length ulf) 2) ulf))
+       (notany (lambda (x) (eql x '\,)) ulf)))
+;; Returns ULF with all VP-HEAD converted to .v.
+(defun vp-head-to-v (ulf)
+  (mapcar #'(lambda (x)
+              (cond
+                ((and (atom x) (eql (nth-value 1 (split-by-suffix x)) 'vp-head))
+                 (add-suffix (nth-value 0 (split-by-suffix x)) 'v))
+                ((atom x) x)
+                (t (vp-head-to-v x))))
+          ulf))
+;; Returns whether this is a coordination with only two elements that needs commas.
+;; This will be
+(defun comma-needing-small-coord? (ulf)
+  (and (listp ulf)
+       (= (length ulf) 3)
+       (lex-coord? (second ulf))
+       (notany (lambda (x) (eql x '\,)) ulf)
+       (let ((un-vp-head (vp-head-to-v ulf)))
+         (and (sent? (first un-vp-head))
+              (sent? (third un-vp-head))))))
+(defparameter *insert-comma-ttt*
+  '(;; flat ps
+    (/ ((!1 lex-ps?) (!2 non-atom? ~ \,) (!3 non-atom? ~ \,))
+       (!1 !2 \, !3))
+    ;; ps first
+    (/ (((!1 lex-ps?) _!2) _!3)
+       ((!1 _!2) \, _!3))
+    ;; ps second
+    (/ (_!1 (* ~ \,) ((!2 lex-ps?) _!3))
+       (_!1 * \, (!2 _!3)))
+    ;; interleaved ps
+    ;; TODO(gene): maybe implement a version that doesn't require bracketing
+    ;; flatness, but just whether there are symbols following it.
+    (/ (_!1 (* ~ \,) ((!2 lex-ps?) _!3) _+4)
+       (_!1 * \, (!2 _!3) \, _+4))
+    ;; coordinaton
+    (/ (! comma-needing-large-coord?)
+       (add-comma-to-coord! !))
+    (/ (! comma-needing-small-coord?)
+       (add-comma-to-coord! !))))
+    ;; three+ item coord.
+    ;(/ (_!1 (* ~ \,) (!2 ~ \,) (!3 lex-coord?) (!4 ~ \,))
+    ;   (add-comma-to-large-coord! (_!1 * !2 !3 !4)))))
+(defun insert-commas! (ulf)
+  (util:unhide-ttt-ops
+    (ttt:apply-rules *insert-comma-ttt* (util:hide-ttt-ops ulf) :max-n 1000
+                     :rule-order :slow-forward)))
+
 
 (defparameter *ulf2english-stages*
   (list ;; TODO: generalize this function to adding types to all the hole variables.
@@ -755,23 +827,23 @@
      "Add info to relativiers")
     (list #'contextual-preprocess "Contextual preprocess")
     (list #'add-morphology "Adding morphology")
+    (list #'insert-commas! "Insert commas")
     (list #'quotes2surface! "Handle quotes")
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'insert-commas! "Insert commas")
     (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
           "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
     (list #'merge-det-thing-combos "Merge special determiner-noun combinations")
-    (list #'(lambda (x) (cl-strings:join x :separator " ")) "Glue together")
-    (list #'remove-precomma-spaces! "Remove spaces before commas")))
+    (list #'remove-precomma-spaces! "Merge commas with previous word")
+    (list #'(lambda (x) (cl-strings:join x :separator " ")) "Glue together")))
 
 
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
-(defun ulf2english (inulf &key (add-punct? t) (capitalize-front? t))
+(defun ulf2english (inulf &key (add-punct? t) (capitalize-front? t) (add-commas nil))
   ;; TODO: make more sophisticated version (quotes, ds, etc.).
 
   ;; For now just drop all special operators and just take the suffixed tokens.
@@ -786,9 +858,14 @@
                                (let* ((fn (first new))
                                       (desc (second new))
                                       (res (funcall fn acc)))
-                                 (if *debug-ulf2english*
-                                   (format t "~a: ~s~%" desc res))
-                                 res))
+                                 (if (and (not add-commas) (equal fn #'insert-commas!))
+                                   ; Just return input value if we're ignoring commas.
+                                   acc
+                                   ; Actual return value.
+                                   (progn
+                                     (if *debug-ulf2english*
+                                       (format t "~a: ~s~%" desc res))
+                                     res))))
                            *ulf2english-stages* :initial-value ulf))
       (funcall (compose
                  (if add-punct? add-punct-fn idfn)
