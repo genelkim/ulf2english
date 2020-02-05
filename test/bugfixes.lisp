@@ -141,3 +141,15 @@
                          generated ulf)))
       sent-ulf-pairs)))
 
+
+(define-test do-inflection
+  "Do inflection error raised by Ben https://github.com/genelkim/ulf2english/issues/37"
+  (:tag :bugfixes :do :inflection)
+  (let ((ulf '((THE.D (|Starbucks| BLOCK.N))
+               ((PRES DO.AUX-S) NOT.ADV-S
+                (TOUCH.V (THE.D (|Twitter| BLOCK.N))))))
+        (expected "The Starbucks block does not touch the Twitter block."))
+    (assert-equal expected
+                  (ulf2english ulf)
+                  ulf)))
+
