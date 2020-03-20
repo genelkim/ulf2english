@@ -8,5 +8,6 @@
   :depends-on (:ttt :cl-strings :cl-json :cl-util :cl-ppcre :ulf-lib :inferior-shell :drakma :lisp-unit)
   :components ((:file "package")
                (:file "pattern-en")
+               (:file "adverbialize")
                (:file "ulf2english"))) 
 

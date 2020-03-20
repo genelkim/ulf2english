@@ -487,6 +487,18 @@
             'vp-head :pkg pkg))))
     (ulf:replace-vp-head vp conjugated)))
 
+(defun adverbialize-adj-head! (ap)
+  "Adverbializes the head adjective of an adjective phrase.
+  The adjective type is retained to preserve any future type
+  computation."
+  (let ((ha (ulf:find-ap-head ap))
+        wordstr advdstr advd pkg)
+    (setf pkg (symbol-package ha))
+    (multiple-value-bind (word suffix) (split-by-suffix ha)
+      (setf wordstr (cl-strings:replace-all (sym2str word) "_" " "))
+      (setf advdstr (cl-strings:replace-all (adj2adv wordstr) " " "_"))
+      (setf advd (add-suffix (intern advdstr) suffix :pkg pkg)))
+    (ulf:replace-ap-head ap advd)))
 
 (defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
@@ -546,6 +558,10 @@
        (!3 verb?) _*3)
       ((perf2have! !1) *1 !2 *2 (vp-to-past-participle! !3) _*3)))
 
+(defparameter *adj2adv*
+  '(/ ((!1 advformer?) (!2 adj?))
+      (!1 (adverbialize-adj-head! !2))))
+
 
 (defun add-morphology (ulf)
   (util:unhide-ttt-ops
@@ -569,6 +585,7 @@
         *participle-for-implicit-mod-x*
         *pres-part-for-ka*
         ;; Core non-interactive pieces.
+        *adj2adv*
         *tensed-pasv2surface*
         *pasv2surface*
         *simple-what-is-tense-n-number2surface*
