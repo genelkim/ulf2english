@@ -153,3 +153,33 @@
                   (ulf2english ulf)
                   ulf)))
 
+(define-test adverbialization
+  "Adveribalizing adjectives until adv-* operators."
+  (:tag :bugfixes :adverbialization)
+  (assert-equal
+    "What block did I recently move?"
+    (ulf2english '((sub (what.d block.n)
+                        ((past do.aux-s) I.pro
+                                         ((adv-e recent.a) (move.v *h))))
+                   ?)))
+  (assert-equal
+    "John ran quickly."
+    (ulf2english '(|John| ((past run.v) (adv-a quick.a)))))
+  (assert-equal
+    "The syrup slowly rolls off the pancakes."
+    (ulf2english '((the.d syrup.n)
+                   ((adv-a slow.a)
+                    (pres roll.v)
+                    (adv-a (off.p (the.d (plur pancake.n))))))))
+  (assert-equal
+    "You fell off your seat mighty clumsily."
+    (ulf2english
+      '(you.pro ((past fall.v)
+                 (adv-a (off.p (your.d seat.n)))
+                 (adv-a (mighty.mod-a clumsy.a))))))
+  (assert-equal
+    "Then you will arrive too early."
+    (ulf2english '(then.adv-s
+                    (you.pro ((pres will.aux-s)
+                              (arrive.v (adv-e (too.mod-a early.a)))))))))
+
