@@ -2,6 +2,8 @@
 ;; Original version of this file written for Epilog.
 (require 'asdf)
 
+(ql:quickload :ulf2english)
+
 ;; Try to be quiet.
 ;(setf (sys:gsgc-switch :print) nil)
 ;(setf (sys:gsgc-switch :stats) nil)
