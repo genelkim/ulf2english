@@ -7,14 +7,13 @@
 (defparameter *python-server-username* "g")
 (defparameter *python-server-password* "g")
 
-(defvar *python-call-methods* '(socket shell))
+(defvar *python-call-methods* '(socket shell py4cl))
 
 (defun ulf2pen-tense (tense)
   (case (util:safe-intern tense :ulf2english)
     (pres 'present)
     (past 'past)
     (cf 'past)
-    ;; TODO: raise error here
     (otherwise (error "~s is not a valid ulf tense" tense))))
 
 ;; Takes the function name, list of required arguments, followed by an
@@ -65,33 +64,57 @@
       (funcall post-proc-fn raw-request-result)
       raw-request-result)))
 
+;; Makes a python call via py4cl.
+;; The same behavior as 'python-over-socket'.
+(defun python-over-py4cl (expression cmd-type)
+  (case cmd-type
+    (exec (py4cl:python-exec expression))
+    (eval (py4cl:python-eval expression))
+    (otherwise
+      (error "Invalid value for cmd-type argument of python-over-py4cl. cmd-type: ~s~%"
+             cmd-type))))
 
-;; Flag for setting up the python server for pattern.en and the function that
-;; performs the setup. The function sets the flag to t so it's not rerun.
+;; Flag for setting up the python environment for pattern.en and the function
+;; that performs the setup. The function sets the flag to t so it's not rerun.
+;; NB: This flag is shared between the socket and py4cl versions of interfacing
+;; with pattern.en. Therefore, each SBCL session should only use one of the two
+;; or explicitly set this flag to nil when changing interface modes.
 (defparameter *setup-complete* nil)
-(defun setup-pattern-en-server ()
-  (python-over-socket "from pattern.en import *" 'exec)
+(defun setup-pattern-en-env (pyfn)
+  "Sets up the python environment for pattern.en calls. 'pyfn' is the function
+  for interfacing with the Python environment (python-over-socket or
+  pyhton-over-py4cl)."
+  (funcall pyfn "from pattern.en import *" 'exec)
   ;; For some reason these aren't defined in pattern.en
-  (python-over-socket "IMPERFECTIVE='imperfective'" 'exec)
-  (python-over-socket "PERFECTIVE='perfective'" 'exec)
+  (funcall pyfn "IMPERFECTIVE='imperfective'" 'exec)
+  (funcall pyfn "PERFECTIVE='perfective'" 'exec)
   (setq *setup-complete* t))
-
 
 ;; Makes a python-call to pattern.en using the provided method.
 (defun make-pattern-en-call (python-call python-method)
-  ;; TODO: add a check that we can connect to the server.  if not, default to
-  ;; the shell version.
+  ;; socket - makes a python call through a socket (started via
+  ;;          python-repl-server.py).
+  ;; py4cl - makes a python call through the py4cl library (recommended).
+  ;; shell - makes a python call through call-pattern-en-fn.py.
   (case python-method
     ;; Run the python call over a socket.
     (socket
-      (if (not *setup-complete*)
-        (setup-pattern-en-server))
+      (when (not *setup-complete*)
+        (setup-pattern-en-env #'python-over-socket))
       (python-over-socket python-call 'eval))
+    ;; Run the python call over py4cl.
+    (py4cl
+      (when (not *setup-complete*)
+        (setup-pattern-en-env #'python-over-py4cl))
+      (python-over-py4cl python-call 'eval))
     ;; Run the python call through the shell.
     (shell
       (inferior-shell:run/s
         `(python call-pattern-en-fn.py
-                 ,python-call)))))
+                 ,python-call)))
+    (otherwise
+      (error "Invalid 'python-method' value for 'make-pattern-en-call'. python-method: ~s~%"
+             python-method))))
 
 ;; Takes an input verb string and conjugation parameters and returns a
 ;; conjugated verb string.
@@ -103,7 +126,7 @@
                                   (aspect 'IMPERFECTIVE)
                                   (negated '|False|)
                                   (parse '|True|)
-                                  (python-method 'socket))
+                                  (python-method 'py4cl))
   ;; Assert that all the arguments are valid.
   (assert (member tense (cdr (assoc 'tense *conjugate-params*))))
   (assert (member person (cdr (assoc 'person *conjugate-params*))))
@@ -134,7 +157,7 @@
 ;; Takes an input noun string and pluralizes it.
 ;; NB: The pattern.en function has some additional parameters, but they don't
 ;; seem useful for the ULF project so they're not suppoted currently.
-(defun pattern-en-pluralize (noun &key (python-method 'socket)
+(defun pattern-en-pluralize (noun &key (python-method 'py4cl)
                                        (preserve-case nil))
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'pluralize (list noun) nil))
@@ -143,7 +166,7 @@
 
 
 ;; Takes an input adjective string and converts it to superlative form.
-(defun pattern-en-superlative (adj &key (python-method 'socket)
+(defun pattern-en-superlative (adj &key (python-method 'py4cl)
                                         (preserve-case nil))
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'superlative (list adj) nil))
@@ -152,7 +175,7 @@
 
 
 ;; Takes an input adjective string and converts it to comparative form.
-(defun pattern-en-comparative (adj &key (python-method 'socket)
+(defun pattern-en-comparative (adj &key (python-method 'py4cl)
                                         (preserve-case nil))
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'comparative (list adj) nil))
