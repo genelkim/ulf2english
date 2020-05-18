@@ -7,18 +7,21 @@ Maps ULFs to English sentences.
 - [TTT](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
 - [cl-util](https://github.com/genelkim/cl-util)
-- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through install-pattern-en.sh
+- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through `install-pattern-en.sh`
 - cl-strings (loaded automatically via quicklisp)
 - lisp-unit (loaded automatically via quicklisp)
 - drakma (loaded automatically via quicklisp)
 - cl-json (loaded automatically via quicklisp)
+- py4cl (loaded automatically via quicklisp)
+
+The current version of the code has only been tested on SBCL.
 
 ## Installation
 1. Install quicklisp by following instructions at https://www.quicklisp.org/beta/
-2. Download the latest asdf.lisp file and include it in your lisp start-up script (e.g. `.clinit.cl`)
+2. Download the latest [asdf.lisp](https://common-lisp.net/project/asdf/#downloads) file and include it in your lisp start-up script (e.g. `.sbclrc`). I recommend also overwriting `quicklisp/asdf.lisp` to eliminate the possibility of accidentally loading the out-of-date copy of `asdf.lisp` that comes with Quicklisp be default.
 3. Then place the other depenedencies listed above in a folder accessible to Quicklisp or ASDF (which underlies quicklisp).  How to do this in a couple ways is described by the following Stack Overflow answer https://stackoverflow.com/a/11265601.
-4. If you need a Python virtual environment, get [virtualenv](https://virtualenv.pypa.io/en/latest/#) (`cs.rochester.edu` already has it) and start a virtual environment. I also recommend [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) for better management of virtual environments.
-5. Run `install.sh` and check that it didn't fail
+4. If you need a Python virtual environment, get [virtualenv](https://virtualenv.pypa.io/en/latest/#) (`cs.rochester.edu` already has it) and start a virtual environment. I also recommend [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) for better management of virtual environments. Alternatively, you can use [Anaconda](https://www.anaconda.com/products/individual).
+5. Run `install-pattern-en.sh` and check that it didn't fail (NB: the version we install requires Python 2)
 
 ## Running the Code
 This is really meant to be a library, but to check the basic functionality of any of the functions, you can load the file load.lisp and enter the package :ulf2english.  For example,
@@ -33,48 +36,84 @@ $
 ```
 ### Starting the pattern.en server
 
-In order to get good performance with ulf2english you'll want to use the server option of accessing pattern.en. In order to do this, make sure to have pattern.en installed and then run 
+By default, ulf2english uses `py4cl` to interface with pattern.en, but if you choose to use the server option instead make sure to start up the server using the following command.
 ```
 python python-repl-server.py 8080 "g:g"
 ```
-This will start the server on localhost, port 8080 with authentication "g:g" (which is the default in the code).
+This will start the server on localhost, port 8080 with authentication "g:g" (which is the default in the code). You can change the port, username, and password that ulf2english uses through parameters (`*python-server-url*`,`*python-server-username*`, `*python-server-password*`)  defined in `pattern-en.lisp`.
 
 ## Running Tests
 The following steps are for running the blocks world question answering unit tests.  You can substitute the file and entered package to select the appropriate tests.
 
 ```
-$ acl
-$ (load "load.lisp")
+> sbcl
+* (load "load.lisp")
 ...[loading messages]...
-$ (load "test/blocks-world-qa.lisp")
+* (load "test/blocks-world-qa.lisp")
 ...[loading messages]...
-$ (in-package :ulf2english)
-#<The ULF2ENGLISH package>
-$ (run-tests)
-ULF2ENGLISH(4): (run-tests)
- | Failed Form: (ULF2ENGLISH REDUCED-ULF)
- | Expected "Is the Nvidia block to the left of the Texaco block?" but saw "be the Nvidia block to the left of the Texaco block"
- | EXPECTED => "Is the Nvidia block to the left of the Texaco block?"
- | (ULF2ENGLISH REDUCED-ULF) => "be the Nvidia block to the left of the Texaco block"
- | REDUCED-ULF => (((PRES BE.V) (THE.D (|Nvidia| BLOCK.N)) (TO_THE_LEFT_OF.P (THE.D (|Texaco| BLOCK.N)))) ?)
- |
+* (in-package :ulf2english)
+#<PACKAGE "ULF2ENGLISH">
+* (run-tests)
+
+BWQA-GK1: 1 assertions passed, 0 failed.
+
+BWQA-GK2: 1 assertions passed, 0 failed.
+
+...[more test results]...
+
+BWQA-GK13: 1 assertions passed, 0 failed.
+
  | Failed Form: (ULF2ENGLISH ULF)
- | Expected "Is the Nvidia block to the left of the Texaco block?" but saw "be the Nvidia block to the left of the Texaco block"
- | EXPECTED => "Is the Nvidia block to the left of the Texaco block?"
- | (ULF2ENGLISH ULF) => "be the Nvidia block to the left of the Texaco block"
- | ULF => (((PRES BE.V) (THE.D (|Nvidia| BLOCK.N)) (TO.P (THE.D ((ADV-A LEFT.A) (OF.P (THE.D |Texaco| BLOCK.N)))))) ?)
+ | Expected "Are the Nvidia and the SRI blocks in the same stack?"
+ | but saw "Are the Nvidia and SRI blocks in the same stack?"
+ | SENTENCE => "Are the Nvidia and the SRI blocks in the same stack?"
+ | (ULF2ENGLISH ULF) => "Are the Nvidia and SRI blocks in the same stack?"
+ | ULF => (((PRES BE.V) (THE.D ((| Nvidia| AND.CC | SRI|) (PLUR BLOCK.N)))
+            (IN.P (THE.D (SAME.A STACK.N))))
+           ?)
  |
-BWQA-1: 0 assertions passed, 2 failed.
+BWQA-GK14: 0 assertions passed, 1 failed.
+
+...[more test results]...
+
+BWQA-GP91: 1 assertions passed, 0 failed.
 
 Unit Test Summary
- | 2 assertions total
- | 0 passed
- | 2 failed
+ | 99 assertions total
+ | 98 passed
+ | 1 failed
  | 0 execution errors
  | 0 missing tests
 
-#<TEST-RESULTS-DB Total(2) Passed(0) Failed(2) Errors(0)>
-$
+#<TEST-RESULTS-DB Total(99) Passed(98) Failed(1) Errors(0)>
+*
+```
+
+Alternatively, run all the default tests by loading `runtest.lisp`.
+
+```
+> sbcl
+* (load "runtest.lisp")
+...[loading messages]...
+BWQA-GK1: 1 assertions passed, 0 failed.
+
+BWQA-GK2: 1 assertions passed, 0 failed.
+
+...[more test results]...
+
+SCOPED-PS: 3 assertions passed, 0 failed.
+
+FLAT-PS: 2 assertions passed, 0 failed.
+
+Unit Test Summary
+ | 187 assertions total
+ | 154 passed
+ | 33 failed
+ | 0 execution errors
+ | 0 missing tests
+
+T
+*
 ```
 
 ## After making changes
@@ -82,44 +121,4 @@ $
 - Delete fasl files in project (e.g. `rm *.fasl`)
 - Delete fasl files in dependency projects if the dependency has changed (e.g. pulling recent version)
 - Run `(ql:quickload :dependency-name)`
-
-
-
-## Loading for Express Version of Allegro Common Lisp
-
-When loading the project (say via `load.lisp` or `runtest.lisp`) on the Express version of Allegro Common Lisp, you will likely come across this error:
-```
-;   Fast loading /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/inferior-shell-20160929-git/macros.fasl
-;   Fast loading /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/inferior-shell-20160929-git/host.fasl
-;   Fast loading /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/inferior-shell-20160929-git/run.fasl
-;   Fast loading /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/puri-20180228-git/src.fasl
-;   Fast loading /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/cl-base64-20150923-git/package.fasl
-Error: about to bind CHAR to NIL, which is not of type CHARACTER.
-  [condition type: TYPE-ERROR]
-
-Restart actions (select using :continue):
-  0: store the value anyway.
-  1: retry the load of /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/cl-base64-20150923-git/package.fasl
-  2: skip loading /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/cl-base64-20150923-git/package.fasl
-  3: recompile /home/vax8/u60/gkim21/quicklisp/dists/quicklisp/software/cl-base64-20150923-git/package.lisp
-  4: Recompile package and try loading it again
-  5: Retry loading FASL for #<CL-SOURCE-FILE "cl-base64" "package">.
-  6: Continue, treating loading FASL for #<CL-SOURCE-FILE "cl-base64" "package"> as having been successful.
-  7: Retry ASDF operation.
-  8: Retry ASDF operation after resetting the configuration.
-  9: Retry ASDF operation.
- 10: Retry ASDF operation after resetting the configuration.
- 11: retry the load of load
- 12: skip loading load
- 13: recompile /home/vax8/u60/gkim21/research/ulf2english/load.lisp
- 14: Return to Top Level (an "abort" restart).
- 15: Abort entirely from this (lisp) process.
-
-[changing package from "COMMON-LISP-USER" to "CL-BASE64"]
-[1] BASE64(2):
-```
-When you encounter this, please select the restart action 0 by typing
-`:continue 0`. I'm pretty sure this error comes from the fact that the library
-being loaded is for 64-bit common lisp where as the Express Edition of ACL is
-32-bit.
 
