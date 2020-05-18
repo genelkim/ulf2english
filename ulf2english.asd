@@ -5,7 +5,7 @@
   :name "ulf2english"
   :version "0.0.1"
   :author "Gene Louis Kim"
-  :depends-on (:ttt :cl-strings :cl-json :cl-util :cl-ppcre :ulf-lib :inferior-shell :drakma :lisp-unit)
+  :depends-on (:ttt :cl-strings :cl-json :cl-util :cl-ppcre :ulf-lib :inferior-shell :drakma :py4cl :lisp-unit)
   :components ((:file "package")
                (:file "pattern-en")
                (:file "adverbialize")
