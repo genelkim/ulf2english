@@ -608,6 +608,7 @@
         *most-morph*)
       (util:hide-ttt-ops ulf) :max-n 1000
       :rule-order :slow-forward)))
+      ;:rule-order :slow-forward :deepest t)))
 
 
 (defun capitalize-first (string)
