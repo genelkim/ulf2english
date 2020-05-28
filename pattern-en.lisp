@@ -30,6 +30,8 @@
     (cl-strings:join
       (list (format nil "~(~a~)" fnname) "(" rarg-str "," karg-str ")"))))
 
+(defun string-output-python-call (rawcall)
+  (cl-strings:join (list "str(" rawcall ")")))
 
 (defparameter *conjugate-params*
   '((tense . (INFINITIVE PRESENT PAST FUTURE))
@@ -96,6 +98,8 @@
   ;;          python-repl-server.py).
   ;; py4cl - makes a python call through the py4cl library (recommended).
   ;; shell - makes a python call through call-pattern-en-fn.py.
+  ; Enforce string value output (vs. say unicode)
+  (setf python-call (string-output-python-call python-call))
   (case python-method
     ;; Run the python call over a socket.
     (socket
