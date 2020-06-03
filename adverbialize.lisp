@@ -3,22 +3,12 @@
 
 (in-package :ulf2english)
 
-(defparameter *adverb-data-file* "resources/wordnet.adv")
 (defparameter *adverbs* nil)
-
-; TODO(gene): use symbols in the adverbs for faster processing. 
-(defun read-adv-file (&optional (force nil))
-  "Reads the adverb file and sets the *adverbs* global parameter with the data.
-  If the *adverb* is not nil, this is a no-op."
-  (when (or force (null *adverbs*))
-    (setf *adverbs*
-          (mapcar #'string-upcase
-                  (with-open-file (s *adverb-data-file*)
-                    (cl-json:decode-json s))))))
 
 (defun adj2adv (adj)
   "Takes an adjective string and returns the corresponding adverb string."
-  (when (null *adverbs*) (read-adv-file))
+  (when (null *adverbs*)
+    (setf *adverbs* *wordnet-adverbs*))
   ;; Cases
   ;; 1. ends in -ly, no change
   ;; 2. ends in -y, replace -y with -ily

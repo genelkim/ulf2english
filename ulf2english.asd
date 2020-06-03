@@ -8,6 +8,7 @@
   :depends-on (:ttt :cl-strings :cl-json :cl-util :cl-ppcre :ulf-lib :inferior-shell :drakma :py4cl :lisp-unit)
   :components ((:file "package")
                (:file "pattern-en")
+               (:file "resources/wordnet-adverbs")
                (:file "adverbialize")
                (:file "ulf2english"))) 
 
