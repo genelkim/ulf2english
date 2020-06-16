@@ -64,7 +64,7 @@
     (when (assoc "repo_token" (cdr json-data) :test #'string=)
       (rplacd (assoc "repo_token" (cdr json-data) :test #'string=)
               "<Secret Coveralls Repo Token>"))
-        (let ((json-file (uiop:with-temporary-file (:stream out :direction :output :keep t)
+        (let ((json-file (uiop:with-temporary-file (:stream out :pathname "coverall-temp.json" :direction :output :keep t)
                            (write-string json out)
                            (pathname out))))
           (format t "~&Sending coverage report to Coveralls...~2%~S~%" json-data)
