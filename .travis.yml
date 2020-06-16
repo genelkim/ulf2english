@@ -72,6 +72,17 @@ install:
       pip install pattern;
     fi
 
+before_script:
+  - if [[ "$LISP" == "sbcl" ]]; then
+      cl -e '(ql:quickload :cl-coveralls)';
+    fi
+
 script:
-  - cl -e '(load "runtest")' 
+  - if [[ "$LISP" == "sbcl" ]]; then
+      COVERALLS=true;
+      cl -e '(coveralls:with-coveralls ()
+               (load "runtest"))';
+    else
+      cl -e '(load "runtest")';
+    fi
 
