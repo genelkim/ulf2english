@@ -1,6 +1,8 @@
 ULF2English
 =======
 
+[![Build Status](https://travis-ci.com/genelkim/ulf2english.svg?branch=master)](https://travis-ci.com/genelkim/ulf2english)
+[![Coverage Status](https://coveralls.io/repos/github/genelkim/ulf2english/badge.svg?branch=master)](https://coveralls.io/github/genelkim/ulf2english?branch=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Maps ULFs to English sentences.
