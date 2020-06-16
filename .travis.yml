@@ -67,9 +67,9 @@ install:
  
   # Install python dependences
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      ./script/install-pattern-en.sh
+      ./script/install-pattern-en.sh;
     else
-      pip install pattern
+      pip install pattern;
     fi
   # No package install at the moment...
   #- python setup.py install
