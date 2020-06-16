@@ -72,7 +72,8 @@
           (format t "content: ~s~%" `(("json_file" . ,json-file)))
           (handler-bind ((dex:http-request-failed (dex:retry-request 5 :interval 3)))
             (dex:post "https://coveralls.io/api/v1/jobs"
-                      :content `(("json_file" . ,json-file)))))))
+                      :content `(("json_file" . ,json)))))))
+                      ;:content `(("json_file" . ,json-file)))))))
 
 (defun pathname-in-directory-p (path directory)
   (let ((directory (pathname-directory directory))
