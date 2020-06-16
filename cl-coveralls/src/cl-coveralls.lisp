@@ -70,10 +70,11 @@
           (format t "~&Sending coverage report to Coveralls...~2%~S~%" json-data)
           (format t "json: ~s~%" json)
           (format t "content: ~s~%" `(("json_file" . ,json-file)))
+          (setf json-file (namestring json-file))
+          (format t "content new: ~s~%" `(("json_file" . ,json-file)))
           (handler-bind ((dex:http-request-failed (dex:retry-request 5 :interval 3)))
             (dex:post "https://coveralls.io/api/v1/jobs"
-                      :content `(("json_file" . ,json)))))))
-                      ;:content `(("json_file" . ,json-file)))))))
+                      :content `(("json_file" . ,json-file)))))))
 
 (defun pathname-in-directory-p (path directory)
   (let ((directory (pathname-directory directory))
