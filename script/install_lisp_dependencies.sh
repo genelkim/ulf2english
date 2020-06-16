@@ -11,9 +11,9 @@ cd ~/quicklisp/local-projects/ttt/src
 cl -e '(load "load")'
 cd $CURDIR
 
-# Update quicklisp asdf version.
-ASDF_URL="https://common-lisp.net/project/asdf/archives/asdf.lisp"
-wget $ASDF_URL
-rm ~/quicklisp/asdf.lisp
-mv asdf.lisp ~/quicklisp/asdf.lisp
+## Update quicklisp asdf version.
+#ASDF_URL="https://common-lisp.net/project/asdf/archives/asdf.lisp"
+#wget $ASDF_URL
+#rm ~/quicklisp/asdf.lisp
+#mv asdf.lisp ~/quicklisp/asdf.lisp
 
