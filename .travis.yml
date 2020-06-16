@@ -38,6 +38,7 @@ install:
   # Install lisp environment.
   #
   - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | sh;
+  - ./script/install_lisp_dependencies.sh  
  
   #
   # Install conda-based python environment.
@@ -63,9 +64,6 @@ install:
   - pip install -r requirements.txt
   # No package install at the moment...
   #- python setup.py install
-
-before_script:
-  - echo "(defsystem :dummy-cl-travis-system)" > ~/lisp/dummy-cl-travis-system.asd
 
 script:
   - cl -e '(load "runtest")' 
