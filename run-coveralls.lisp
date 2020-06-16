@@ -1,3 +1,5 @@
 (ql:quickload :cl-coveralls)
+;(setf uiop:*temporary-directory* *default-pathname-defaults*)
+(trace dex:post dex:request coveralls::calc-coverage coveralls::get-coverage coveralls::finalize-coverage coveralls::parse-report-files string-downcase)
 (coveralls:with-coveralls ()
   (load "runtest"))
