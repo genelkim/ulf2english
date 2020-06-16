@@ -42,8 +42,9 @@ install:
   #
   # Install lisp environment.
   #
-  - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | sh;
-  - ./script/install_lisp_dependencies.sh  
+  #- curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | sh;
+  - ./script/cl_travis_install.sh
+	- ./script/install_lisp_dependencies.sh  
  
   #
   # Install conda-based python environment.
