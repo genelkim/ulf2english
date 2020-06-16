@@ -1,0 +1,72 @@
+language: python
+python:
+  - '2.7'
+  - '3.6'
+  - '3.7'
+
+env:
+  matrix:
+    - LISP=sbcl
+    - LISP=sbcl32
+    - LISP=allegro
+    - LISP=allegromodern
+    - LISP=abcl
+    - LISP=ccl
+    - LISP=ccl32
+    - LISP=clisp
+    - LISP=clisp32
+    - LISP=cmucl
+    - LISP=ecl
+
+matrix:
+  allow_failures:
+    # Only plan to support SBCL, but check compatilibity issues on other
+    # distributions.
+    - env: LISP=allegro
+    - env: LISP=allegromodern
+    - env: LISP=abcl
+    - env: LISP=ccl
+    - env: LISP=ccl32
+    - env: LISP=clisp
+    - env: LISP=clisp32
+    - env: LISP=ecl
+    # CIM not available for CMUCL
+    - env: LISP=cmucl
+
+install:
+  #
+  # Install lisp environment.
+  #
+  - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | sh;
+ 
+  #
+  # Install conda-based python environment.
+  #
+  - sudo apt update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a # Useful for debugging any issues with conda
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda activate test-environment
+ 
+  # Install python dependences
+  - pip install -r requirements.txt
+  # No package install at the moment...
+  #- python setup.py install
+
+before_script:
+  - echo "(defsystem :dummy-cl-travis-system)" > ~/lisp/dummy-cl-travis-system.asd
+
+script:
+  - cl -e '(load "runtest")' 
+
