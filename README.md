@@ -7,7 +7,7 @@ Maps ULFs to English sentences.
 - [TTT](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
 - [cl-util](https://github.com/genelkim/cl-util)
-- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through `install-pattern-en.sh`
+- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through `script/install-pattern-en.sh`
 - cl-strings (loaded automatically via quicklisp)
 - lisp-unit (loaded automatically via quicklisp)
 - drakma (loaded automatically via quicklisp)
@@ -21,7 +21,7 @@ The current version of the code has only been tested on SBCL.
 2. Download the latest [asdf.lisp](https://common-lisp.net/project/asdf/#downloads) file and include it in your lisp start-up script (e.g. `.sbclrc`). I recommend also overwriting `quicklisp/asdf.lisp` to eliminate the possibility of accidentally loading the out-of-date copy of `asdf.lisp` that comes with Quicklisp be default.
 3. Then place the other depenedencies listed above in a folder accessible to Quicklisp or ASDF (which underlies quicklisp).  How to do this in a couple ways is described by the following Stack Overflow answer https://stackoverflow.com/a/11265601.
 4. If you need a Python virtual environment, get [virtualenv](https://virtualenv.pypa.io/en/latest/#) (`cs.rochester.edu` already has it) and start a virtual environment. I also recommend [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) for better management of virtual environments. Alternatively, you can use [Anaconda](https://www.anaconda.com/products/individual).
-5. Run `install-pattern-en.sh` and check that it didn't fail (NB: the version we install requires Python 2)
+5. Run `script/install-pattern-en.sh` and check that it didn't fail (NB: the version we install requires Python 2). For Python 3 use `pip install pattern`.
 
 ## Running the Code
 This is really meant to be a library, but to check the basic functionality of any of the functions, you can load the file load.lisp and enter the package :ulf2english.  For example,
