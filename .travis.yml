@@ -79,9 +79,10 @@ install:
 
 script:
   - if [[ "$LISP" == "sbcl" ]]; then
-      cl -e '(ql:quickload :cl-coveralls)
-             (coveralls:with-coveralls ()
-               (load "runtest"))';
+      cl -f run-coveralls.lisp
+      #cl -e '(ql:quickload :cl-coveralls)
+      #       (coveralls:with-coveralls ()
+      #         (load "runtest"))';
     else
       cl -e '(load "runtest")';
     fi
