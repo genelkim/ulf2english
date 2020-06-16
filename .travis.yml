@@ -71,8 +71,8 @@ install:
     else
       pip install pattern;
     fi
-  - mkdir -p /tmp
-  - chmod a+rwx /tmp
+  - sudo mkdir -p /tmp
+  - sudo chmod a+rwx /tmp
 
 #before_script:
 #  - if [[ "$LISP" == "sbcl" ]]; then
