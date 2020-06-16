@@ -71,6 +71,7 @@ install:
     else
       pip install pattern;
     fi
+  - mkdir /tmp
 
 #before_script:
 #  - if [[ "$LISP" == "sbcl" ]]; then
