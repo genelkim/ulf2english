@@ -6,7 +6,7 @@ python:
 
 env:
   matrix:
-    - LISP=sbcl
+    - LISP=sbcl COVERALLS=true
     - LISP=sbcl32
     - LISP=allegro
     - LISP=allegromodern
@@ -79,7 +79,6 @@ install:
 
 script:
   - if [[ "$LISP" == "sbcl" ]]; then
-      COVERALLS=true;
       cl -e '(ql:quickload :cl-coveralls)
              (coveralls:with-coveralls ()
                (load "runtest"))';
