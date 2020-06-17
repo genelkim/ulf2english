@@ -3,10 +3,11 @@ python:
   - '2.7'
   - '3.6'
   - '3.7'
+  - '3.8'
 
 env:
   matrix:
-    - LISP=sbcl COVERALLS=true
+    - LISP=sbcl
     - LISP=sbcl32
     - LISP=allegro
     - LISP=allegromodern
@@ -43,8 +44,8 @@ install:
   # Install lisp environment.
   #
   - ./script/cl_travis_install.sh
-  - ./script/install_lisp_dependencies.sh  
- 
+  - ./script/install_lisp_dependencies.sh
+
   #
   # Install conda-based python environment.
   #
@@ -64,29 +65,14 @@ install:
   - conda info -a # Useful for debugging any issues with conda
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
- 
+
   # Install python dependences
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       ./script/install-pattern-en.sh;
     else
       pip install pattern;
     fi
-  - sudo mkdir -p /tmp
-  - sudo chmod a+rwx /tmp
-
-#before_script:
-#  - if [[ "$LISP" == "sbcl" ]]; then
-#      cl -e '(ql:quickload :cl-coveralls)';
-#    fi
 
 script:
-  - if [[ "$LISP" == "sbcl" ]]; then
-      sbcl --load run-coveralls.lisp;
-    else
-      cl -e '(load "runtest")';
-    fi
-#cl -f run-coveralls.lisp
-#cl -e '(ql:quickload :cl-coveralls)
-#       (coveralls:with-coveralls ()
-#         (load "runtest"))';
+  - cl -e '(load "runtest")'
 
