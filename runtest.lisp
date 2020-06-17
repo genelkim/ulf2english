@@ -1,4 +1,4 @@
-(load "load")
+(ql:quickload :ulf2english)
 (load "test/blocks-world-qa")
 (load "test/bugfixes")
 (load "test/examples-from-guidelines")
