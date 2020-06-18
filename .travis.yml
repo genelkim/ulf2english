@@ -39,7 +39,7 @@ install:
   #
   # Install lisp environment.
   #
-  - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+  - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh;
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
