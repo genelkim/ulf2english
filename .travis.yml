@@ -77,7 +77,7 @@ cache:
     # Cache roswell
     - $HOME/.roswell
 
-script
+script:
   - ros -l runtest.lisp
 #- cl -e '(load "runtest")'
 
