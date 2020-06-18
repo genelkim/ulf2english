@@ -16,7 +16,7 @@ env:
     - PATH=~/.roswell/bin:$PATH
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
   matrix:
-    - LISP=sbcl
+    - LISP=sbcl COVERALLS=true
     - LISP=allegro
     - LISP=abcl
     - LISP=ccl-bin
@@ -78,6 +78,12 @@ cache:
     - $HOME/.roswell
 
 script:
-  - ros -l runtest.lisp
+  - if [[ "$LISP" == "sbcl" ]]; then
+      ros -s cl-coveralls -e '(or (coveralls:with-coveralls (load "runtest"))
+                                  (uiop:quit -1))';
+    else
+      ros -l runtest.lisp;
+    fi
+#  ros -l runtest.lisp
 #- cl -e '(load "runtest")'
 
