@@ -40,8 +40,6 @@ install:
   # Install lisp environment.
   #
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
-  #- ./script/cl_travis_install.sh
-  #- ./script/install_lisp_dependencies.sh
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
@@ -81,5 +79,5 @@ cache:
 
 script
   - ros -l runtest.lisp
-  #- cl -e '(load "runtest")'
+#- cl -e '(load "runtest")'
 
