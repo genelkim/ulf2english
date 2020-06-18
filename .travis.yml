@@ -39,10 +39,15 @@ install:
   #
   # Install lisp environment.
   #
+  # Install roswell
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh;
+  # Install non-quicklisp dependencies
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
+  # Install trivial-mimes from github because of a critical bugfix since last quicklisp update.
+  - ros install Shinmera/trivial-mimes
+  # Make current project accessible by roswell
   - ln -s $(pwd) ~/.roswell/local-projects/ulf2english
 
   #
@@ -79,11 +84,9 @@ cache:
 
 script:
   - if [[ "$LISP" == "sbcl" ]]; then
-      ros -s cl-coveralls -e '(or (coveralls:with-coveralls () (+ 1 1))
+      ros -s cl-coveralls -e '(or (coveralls:with-coveralls () (load "runtest"))
                                   (uiop:quit -1))';
     else
       ros -l runtest.lisp;
     fi
 
-#      ros -s cl-coveralls -e '(or (coveralls:with-coveralls () (load "runtest"))
-#                                  (uiop:quit -1))';
