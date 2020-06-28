@@ -524,7 +524,7 @@
       (adv-a (vp-to-participle! !1))))
 (defparameter *pres-part-for-ka*
   '(/ (ka (!1 verb?))
-      (vp-to-present-participle! !1)))
+      (ka (vp-to-present-participle! !1))))
 
 ;; Functions to help with writing TTT rules on prog and perf since they have
 ;; tensed variants.

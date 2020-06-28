@@ -183,3 +183,58 @@
                     (you.pro ((pres will.aux-s)
                               (arrive.v (adv-e (too.mod-a early.a)))))))))
 
+(define-test ka-tenses
+  "Tenses not being added correctly for kinds of actions."
+  (:tag :bugfixes :tense)
+  (assert-equal
+    "The next step is putting the Twitter block on the Texaco block ."
+    (ulf2english '(((THE.D (NEXT.A STEP.N))
+                    ((PRES BE.V)
+                     (= (KA (PUT.V (THE.D (|Twitter| BLOCK.N))
+                                   (ON.P (THE.D (|Texaco| BLOCK.N)))))))) \.)))
+  (assert-equal
+    "The next step is putting the Twitter block on it ."
+    (ulf2english '(((THE.D (NEXT.A STEP.N))
+                    ((PRES BE.V)
+                     (= (KA (PUT.V (THE.D (|Twitter| BLOCK.N))
+                                   (ON.P IT.PRO)))))) \.)))
+  (assert-equal
+    "The next step is putting that on it ."
+    (ulf2english '(((THE.D (NEXT.A STEP.N))
+                    ((PRES BE.V)
+                     (= (KA (PUT.V THAT.PRO
+                                   (ON.P IT.PRO)))))) \.)))
+  (assert-equal
+    "The step is putting that on it ."
+    (ulf2english '(((THE.D STEP.N)
+                    ((PRES BE.V)
+                     (= (KA (PUT.V THAT.PRO
+                                   (ON.P IT.PRO)))))) \.)))
+  (assert-equal
+    "It is putting that on it ."
+    (ulf2english '((IT.PRO
+                    ((PRES BE.V)
+                     (= (KA (PUT.V THAT.PRO
+                                   (ON.P IT.PRO)))))) \.)))
+  (assert-equal
+    "It is putting that on it."
+    (ulf2english '(IT.PRO
+                    ((PRES BE.V)
+                     (= (KA (PUT.V THAT.PRO
+                                   (ON.P IT.PRO))))))))
+  (assert-equal
+    "That is running."
+    (ulf2english '(THAT.PRO ((pres be.v) (= (ka run.v)))))))
+
+(define-test embedded-tenses
+  "Tenses not being handled correctly on embedded tenses."
+  (:tag :bugfixes :tenses)
+  (assert-equal
+    "At what place the Target block was before it was on the Starbucks block?"
+    (ulf2english '((SUB (AT.P (WHAT.D PLACE.N))
+                        ((THE.D (|Target| BLOCK.N))
+                         ((PAST BE.V) *H
+                                      (ADV-E (BEFORE.P (KE (IT.PRO
+                                                             ((PAST BE.V)
+                                                              (ON.P (THE.D (|Starbucks| BLOCK.N))))))))))) ?))))
+
