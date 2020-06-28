@@ -13,7 +13,7 @@ Maps ULFs to English sentences.
 - [TTT](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
 - [cl-util](https://github.com/genelkim/cl-util)
-- [pattern.en](https://www.clips.uantwerpen.be/pattern), installed through `script/install-pattern-en.sh`
+- [pattern](https://github.com/clips/pattern), If using Python 3, install with `pip install pattern`. If using Python 2, install with `script/install-pattern-en.sh`
 - cl-strings (loaded automatically via quicklisp)
 - lisp-unit (loaded automatically via quicklisp)
 - drakma (loaded automatically via quicklisp)
