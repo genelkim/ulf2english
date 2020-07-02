@@ -5,3 +5,4 @@
 (load "test/commas")
 (in-package :ulf2english)
 (run-tests)
+(sb-ext:exit)

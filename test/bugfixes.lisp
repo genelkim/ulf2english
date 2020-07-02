@@ -230,11 +230,38 @@
   "Tenses not being handled correctly on embedded tenses."
   (:tag :bugfixes :tenses)
   (assert-equal
-    "At what place the Target block was before it was on the Starbucks block?"
+    "Where the Target block was before it was on the Starbucks block?"
     (ulf2english '((SUB (AT.P (WHAT.D PLACE.N))
                         ((THE.D (|Target| BLOCK.N))
                          ((PAST BE.V) *H
                                       (ADV-E (BEFORE.P (KE (IT.PRO
                                                              ((PAST BE.V)
-                                                              (ON.P (THE.D (|Starbucks| BLOCK.N))))))))))) ?))))
+                                                              (ON.P (THE.D (|Starbucks| BLOCK.N))))))))))) ?)))
+  (assert-equal
+    "You do not know where I moved the Texaco block."
+    (ulf2english '(YOU.PRO ((PRES DO.AUX-S) NOT
+                            (KNOW.V
+                             (ANS-TO (SUB WHERE.PQ
+                                          (I.PRO ((PAST MOVE.V)
+                                                  (THE.D (|Texaco| BLOCK.N)) *H)))))))))
+  (assert-equal
+    "You do not know where I moved the Texaco block."
+    (ulf2english '(YOU.PRO ((PRES DO.AUX-S) NOT
+                            (KNOW.V
+                             (ANS-TO (SUB WHERE.A
+                                          (I.PRO ((PAST MOVE.V)
+                                                  (THE.D (|Texaco| BLOCK.N)) (ADV-A *H))))))))))
+  (assert-equal
+    "You do not know where I moved the Texaco block."
+    (ulf2english '(YOU.PRO ((PRES DO.AUX-S) NOT
+                            (KNOW.V
+                             (ANS-TO (SUB (at-loc.p which.pro)
+                                          (I.PRO ((PAST MOVE.V)
+                                                  (THE.D (|Texaco| BLOCK.N)) (ADV-A *H))))))))))
+  (assert-equal
+    "You do not know who I moved."
+    (ulf2english '(YOU.PRO ((PRES DO.AUX-S) NOT
+                            (KNOW.V
+                             (ANS-TO (SUB WHO.PRO
+                                          (I.PRO ((PAST MOVE.V) *H))))))))))
 
