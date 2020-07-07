@@ -130,7 +130,7 @@
                                   (aspect 'IMPERFECTIVE)
                                   (negated '|False|)
                                   (parse '|True|)
-                                  (python-method 'py4cl))
+                                  (python-method 'socket))
   ;; Assert that all the arguments are valid.
   (assert (member tense (cdr (assoc 'tense *conjugate-params*))))
   (assert (member person (cdr (assoc 'person *conjugate-params*))))
@@ -161,7 +161,7 @@
 ;; Takes an input noun string and pluralizes it.
 ;; NB: The pattern.en function has some additional parameters, but they don't
 ;; seem useful for the ULF project so they're not suppoted currently.
-(defun pattern-en-pluralize (noun &key (python-method 'py4cl)
+(defun pattern-en-pluralize (noun &key (python-method 'socket)
                                        (preserve-case nil))
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'pluralize (list noun) nil))
@@ -170,7 +170,7 @@
 
 
 ;; Takes an input adjective string and converts it to superlative form.
-(defun pattern-en-superlative (adj &key (python-method 'py4cl)
+(defun pattern-en-superlative (adj &key (python-method 'socket)
                                         (preserve-case nil))
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'superlative (list adj) nil))
@@ -179,7 +179,7 @@
 
 
 ;; Takes an input adjective string and converts it to comparative form.
-(defun pattern-en-comparative (adj &key (python-method 'py4cl)
+(defun pattern-en-comparative (adj &key (python-method 'socket)
                                         (preserve-case nil))
   (assert (member python-method *python-call-methods*))
   (let* ((python-call (python-call 'comparative (list adj) nil))
