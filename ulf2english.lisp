@@ -493,6 +493,13 @@
             'vp-head :pkg pkg))))
     (ulf:replace-vp-head vp conjugated)))
 
+(defun vp-head? (x)
+  "Checks whether the given argument is a vp-head type. This type is not part
+  of the actual ULF type system. Rather, it's introduced during ULF2English
+  processing to stop verb conjugation rules to be applied more than once in a
+  verb phrase."
+  (ulf::in-package-suffix-check x "VP-HEAD"))
+
 (defun adverbialize-adj-head! (ap)
   "Adverbializes the head adjective of an adjective phrase.
   The adjective type is retained to preserve any future type
@@ -517,8 +524,12 @@
   '(/ ((!1 mod-n mod-a) (!2 verb?))
       (!1 (vp-to-participle! !2))))
 (defparameter *participle-for-implicit-mod-x*
-  '(/ ((!1 verb?) (!2 noun? adj?))
-      ((vp-to-participle! !1) !2)))
+;`````````````````````````````````````````````
+; Transforms verb pre-modifying nouns or bare verb phrases to present
+; participle form. Not applied if nested under a head verb or a auxiliary.
+  '(/ ((+ ~ aux? tensed-aux? vp-head? (lex-tense? vp-head?))
+       ((!1 verb?) (!2 noun? adj?)) _*)
+      (+ ((vp-to-participle! !1) !2) _*)))
 (defparameter *participle-for-adv-a*
   '(/ (adv-a (!1 verb?))
       (adv-a (vp-to-participle! !1))))
