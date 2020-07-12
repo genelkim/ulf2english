@@ -265,3 +265,11 @@
                              (ANS-TO (SUB WHO.PRO
                                           (I.PRO ((PAST MOVE.V) *H))))))))))
 
+(define-test should-be
+  "Conjugation on 'should be'"
+  (:tag :bugfixes :should-be)
+  (assert-equal
+    "The Twitter block should be clear."
+    (ulf2english '((the.d (|Twitter| block.n))
+                   ((pres should.aux-s) (be.v clear.a))))))
+
