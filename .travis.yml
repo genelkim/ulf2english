@@ -40,7 +40,8 @@ install:
   # Install lisp environment.
   #
   # Install roswell
-  - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh;
+  #- curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh;
+  - curl -L https://raw.githubusercontent.com/genelkim/custom-ci-scripts/master/install-for-ci-sbcl-2.0.7.sh | sh;
   # Install non-quicklisp dependencies
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
