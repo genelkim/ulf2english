@@ -45,8 +45,6 @@ install:
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
-  # Install trivial-mimes from github because of a critical bugfix since last quicklisp update.
-  - ros install Shinmera/trivial-mimes
   # Make current project accessible by roswell
   - ln -s $(pwd) ~/.roswell/local-projects/ulf2english
 
