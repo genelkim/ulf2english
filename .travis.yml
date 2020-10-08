@@ -46,6 +46,8 @@ install:
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
+  # Temporary fix, remove this once the fix has been propagated to Quicklisp
+  - ros install genelkim/py4cl2/v0.1-temp
   # Make current project accessible by roswell
   - ln -s $(pwd) ~/.roswell/local-projects/ulf2english
 
