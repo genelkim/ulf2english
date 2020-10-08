@@ -70,8 +70,13 @@
 ;; The same behavior as 'python-over-socket'.
 (defun python-over-py4cl (expression cmd-type)
   (case cmd-type
-    (exec (py4cl:python-exec expression))
-    (eval (py4cl:python-eval expression))
+    (exec
+      (handler-case (py4cl:python-exec expression)
+        ; Just try again because of an issue in py4cl which doesn't handle generators correctly in Python >3.6.
+        (py4cl:python-error () (py4cl:python-exec expression))))
+    (eval
+      (handler-case (py4cl:python-eval expression)
+        (py4cl:python-error () (py4cl:python-eval expression))))
     (otherwise
       (error "Invalid value for cmd-type argument of python-over-py4cl. cmd-type: ~s~%"
              cmd-type))))
