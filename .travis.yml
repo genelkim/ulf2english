@@ -46,8 +46,6 @@ install:
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
-  # Install trivial-mimes from github because of a critical bugfix since last quicklisp update.
-  - ros install Shinmera/trivial-mimes
   # Temporary fix, remove this once the fix has been propagated to Quicklisp
   - ros install genelkim/py4cl2/v0.1-temp
   # Make current project accessible by roswell
