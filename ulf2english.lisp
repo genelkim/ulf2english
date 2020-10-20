@@ -46,10 +46,10 @@
 
 
 (defun set-of-to-and (ulf)
-  (util:unhide-ttt-ops
+  (unhide-ttt-ops
     (ttt:apply-rule
       '(/ (set-of _+ _!) (_+ and.cc _!))
-      (util:hide-ttt-ops ulf))))
+      (hide-ttt-ops ulf))))
 
 
 (defun pluralize! (ulf)
@@ -581,7 +581,7 @@
 
 
 (defun add-morphology (ulf)
-  (util:unhide-ttt-ops
+  (unhide-ttt-ops
     (ttt:apply-rules
       (list
         ;; NB: THE ORDER HERE MATTERS
@@ -617,7 +617,7 @@
         *plur2surface*
         *most-n-morph*
         *most-morph*)
-      (util:hide-ttt-ops ulf) :max-n 1000
+      (hide-ttt-ops ulf) :max-n 1000
       :rule-order :slow-forward :rule-depth :deepest)))
 
 
@@ -658,10 +658,10 @@
 ;;   (on.p ({the}.d (top-of.n *ref)))
 ;;   -> (on.p ({the}.d top.n))
 (defun relational-nouns-to-surface (ulf)
-  (util:unhide-ttt-ops
+  (unhide-ttt-ops
     (ttt:apply-rules '((/ (lex-rel-noun? (! [*S] [*REF]))
                           (unrel-noun! lex-rel-noun?)))
-                     (util:hide-ttt-ops ulf) :max-n 500
+                     (hide-ttt-ops ulf) :max-n 500
                      :rule-order :slow-forward)))
 
 
@@ -841,8 +841,8 @@
     ;(/ (_!1 (* ~ \,) (!2 ~ \,) (!3 lex-coord?) (!4 ~ \,))
     ;   (add-comma-to-large-coord! (_!1 * !2 !3 !4)))))
 (defun insert-commas! (ulf)
-  (util:unhide-ttt-ops
-    (ttt:apply-rules *insert-comma-ttt* (util:hide-ttt-ops ulf) :max-n 1000
+  (unhide-ttt-ops
+    (ttt:apply-rules *insert-comma-ttt* (hide-ttt-ops ulf) :max-n 1000
                      :rule-order :slow-forward)))
 
 
