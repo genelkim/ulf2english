@@ -79,7 +79,7 @@
     (t
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
              (plurhn (pluralize! hn)))
-        (replace-np-head ulf plurhn)))))
+        (replace-np-head ulf plurhn :callpkg :ulf2english)))))
 
 
 
@@ -141,11 +141,13 @@
 ; Converts the given adjective phrase and converts it to superlative form.
 ; This amounts to finding the head adjective and making it superlative most of
 ; the time.  If the head isn't found, we just wrap 'most' around the whole thing.
-  (multiple-value-bind (ha found _1) (ulf:search-ap-head apulf)
+  (multiple-value-bind (ha found _1) (ulf:search-ap-head apulf :callpkg :ulf2english)
     (declare (ignore _1))
     (cond
       (found
-        (multiple-value-bind (_2 _3 newap) (ulf:search-ap-head apulf :sub (lex-superlative! ha))
+        (multiple-value-bind (_2 _3 newap) (ulf:search-ap-head apulf
+                                                               :sub (lex-superlative! ha)
+                                                               :callpkg :ulf2english)
           (declare (ignore _2))
           (declare (ignore _3))
           newap))
@@ -292,7 +294,7 @@
   (assert (member part-type '(PRESENT PAST nil)))
   (cond
     ((verb? vp)
-     (let* ((head-verb (ulf:find-vp-head vp))
+     (let* ((head-verb (ulf:find-vp-head vp :callpkg :ulf2english))
             (participle
               (cond
                 ;; Present participle condition.
@@ -313,7 +315,7 @@
                  (verb-to-past-participle! (second head-verb)))
                 (t (error "verb ~s is not a form that can become a past participle"
                           head-verb)))))
-       (ulf:replace-vp-head vp participle)))
+       (ulf:replace-vp-head vp participle :callpkg :ulf2english)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
 
@@ -451,7 +453,7 @@
               vp)))
   (let* ((num (if (plur-term? subj) 'PL 'SG))
          (pers (subj2person! subj))
-         (hv (ulf:find-vp-head vp))
+         (hv (ulf:find-vp-head vp :callpkg :ulf2english))
          (tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
          (lex-verb (if tense (second hv) hv))
          conjugated pkg)
@@ -491,7 +493,7 @@
                   pkg)))
             ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
             'vp-head :pkg pkg))))
-    (ulf:replace-vp-head vp conjugated)))
+    (ulf:replace-vp-head vp conjugated :callpkg :ulf2english)))
 
 (defun vp-head? (x)
   "Checks whether the given argument is a vp-head type. This type is not part
@@ -504,14 +506,14 @@
   "Adverbializes the head adjective of an adjective phrase.
   The adjective type is retained to preserve any future type
   computation."
-  (let ((ha (ulf:find-ap-head ap))
+  (let ((ha (ulf:find-ap-head ap :callpkg :ulf2english))
         wordstr advdstr advd pkg)
     (setf pkg (symbol-package ha))
     (multiple-value-bind (word suffix) (split-by-suffix ha)
       (setf wordstr (cl-strings:replace-all (sym2str word) "_" " "))
       (setf advdstr (cl-strings:replace-all (adj2adv wordstr) " " "_"))
       (setf advd (add-suffix (intern advdstr) suffix :pkg pkg)))
-    (ulf:replace-ap-head ap advd)))
+    (ulf:replace-ap-head ap advd :callpkg :ulf2english)))
 
 (defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
