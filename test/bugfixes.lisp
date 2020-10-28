@@ -273,3 +273,10 @@
     (ulf2english '((the.d (|Twitter| block.n))
                    ((pres should.aux-s) (be.v clear.a))))))
 
+(define-test tails
+  "Missing plural"
+  (:tag :bugfixes :plur)
+  (assert-equal
+    "All cats have tails."
+    (ulf2english '((ALL.D (PLUR CAT.N)) ((PRES HAVE.V) (K (PLUR TAIL.N)))))))
+
