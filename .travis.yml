@@ -78,10 +78,10 @@ install:
       pip install pattern;
     fi
 
-cache:
-  directories:
-    # Cache roswell
-    - $HOME/.roswell
+#cache:
+#  directories:
+#    # Cache roswell
+#    - $HOME/.roswell
 
 script:
   - if [[ "$LISP" == "sbcl" ]]; then
