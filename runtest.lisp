@@ -4,8 +4,5 @@
 (load "test/examples-from-guidelines")
 (load "test/commas")
 (in-package :ulf2english)
-(format t "ulf2english call: ~s~%"
-        (ulf2english '(((pres be.v) (the.d (| Nvidia| block.n))
-                                    (to.p (the.d (left-of.n (the.d | Texaco| block.n))))) ?)))
 (run-tests)
 (sb-ext:exit)
