@@ -53,7 +53,7 @@ The following steps are for running the blocks world question answering unit tes
 
 ```
 > sbcl
-* (load "load.lisp")
+* (ql:quickload :ulf2english)
 ...[loading messages]...
 * (load "test/blocks-world-qa.lisp")
 ...[loading messages]...
