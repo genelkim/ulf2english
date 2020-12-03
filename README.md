@@ -33,7 +33,7 @@ The current version of the code has only been tested on SBCL.
 This is really meant to be a library, but to check the basic functionality of any of the functions, you can load the file load.lisp and enter the package :ulf2english.  For example,
 ```
 $ acl
-$ (load "load.lisp")
+$ (ql:quickload :ulf2english)
 $ ...[loading messages]...
 $ (in-package :ulf2english)
 $ (ulf2english '(This.pro ((pres be.v) (= (a.d sentence.n)))))
