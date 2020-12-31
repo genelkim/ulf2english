@@ -164,8 +164,8 @@
 ; (tense ulf).  Otherwise, it just returns the ulf.
 ;
 ; e.g.
-;   (past run.v) -> ran.v
-;   (pres sleep.v) -> sleep.v
+;   (past run.v) -> ran.vp-head
+;   (pres sleep.v) -> sleep.vp-head
   (cond
     ;; Simple case where there's tense and a simple verb.
     ((and (= 2 (length ulf))
@@ -190,7 +190,10 @@
              ((not (is-surface-token? verb)) word) ; {be}.v -> {be}.v
              (t (safe-intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
                              pkg)))
-           suffix :pkg pkg))))
+           (case suffix 
+             (v 'vp-head)
+             (otherwise suffix))
+           :pkg pkg))))
     ;; Ignore all other cases for now.
     (t ulf)))
 
@@ -614,8 +617,7 @@
         *exist-there-tense-n-number2surface*
         *inv-exist-there-tense-n-number2surface*
         ;*inv-simple-sub-tense-n-number2surface*
-        ; NB: comment below when testing tense-n-number2surface, but uncomment during use.
-        ;*tense2surface* ; default tense if above didn't work.
+        *tense2surface* ; default tense if above didn't work.
         *plur2surface*
         *most-n-morph*
         *most-morph*)
