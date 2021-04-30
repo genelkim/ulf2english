@@ -55,7 +55,7 @@
 (define-test yes-no
   "Examples from the Yes-No subsection"
   (:tag :guidelines :yes-no)
-  (let ((strclean (util:compose #'cl-strings:clean
+  (let ((strclean (gute:compose #'cl-strings:clean
                                 #'remove-punctuation)))
     (assert-equal (funcall strclean "Yes")
                   (funcall strclean (ulf2english 'yes.yn)))
@@ -63,7 +63,7 @@
     (let* ((expected (funcall strclean "Uh-huh, that's the plan"))
            (generated (funcall strclean
                               (ulf2english '(Uh-huh.yn (that.pro ((pres be.v) (the.d plan.n)))))))
-           (variants (util:contraction-possibilities generated)))
+           (variants (gute:contraction-possibilities generated)))
       (assert-true (member expected variants :test #'equal)
                    generated))
     (assert-equal (funcall strclean "Definitely yes")

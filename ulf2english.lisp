@@ -13,8 +13,8 @@
 ;; If not a name replace dash and underscores with spaces.
 ;; Otherwise, the string is made lowercase.
 (defun post-format-ulf-string (s)
-  (let ((sstr (if (symbolp s) (util:sym2str s) s)))
-    (util:trim
+  (let ((sstr (if (symbolp s) (gute:sym2str s) s)))
+    (gute:trim
       (if (ulf:is-strict-name? sstr)
         (coerce (subseq (coerce sstr 'list) 1 (1- (length sstr)))
                 'string)
@@ -180,10 +180,10 @@
 ;   if it ends in 'e', append 'd'
 ;   otherwise, append 'ed'
   (if (atom word)
-    (let ((letters (util:split-into-atoms word)))
+    (let ((letters (gute:split-into-atoms word)))
       (if (member (car (last letters)) '(#\e #\E))
-        (util:fuse-into-atom (append letters '(#\D)))
-        (util:fuse-into-atom (append letters '(#\E #\D)))))
+        (gute:fuse-into-atom (append letters '(#\D)))
+        (gute:fuse-into-atom (append letters '(#\E #\D)))))
     ;; Just return since it's not an atom.
     word))
 
@@ -624,9 +624,9 @@
 (defun unrel-noun! (ulf)
   (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
     (let ((pkg (symbol-package ulf))
-          (wchars (util:split-into-atoms word))
-          (tchars (util:split-into-atoms suffix)))
-      (util:fuse-into-atom
+          (wchars (gute:split-into-atoms word))
+          (tchars (gute:split-into-atoms suffix)))
+      (gute:fuse-into-atom
         (append (reverse (nthcdr 3 (reverse wchars)))
                 '(\.)
                 tchars)
@@ -840,7 +840,7 @@
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
     (list #'(lambda (x) (remove-if-not #'surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
+    (list #'(lambda (x) (mapcar #'(lambda (y) (gute:atom2str y)) x))
           "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
@@ -857,7 +857,7 @@
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
   ;; "or", "to".
-  (util:in-intern (inulf ulf :ulf2english)
+  (gute:in-intern (inulf ulf :ulf2english)
     (let* ((idfn #'(lambda (x) x))
            (punct (extract-punctuation ulf))
            (add-punct-fn (add-punct-curried punct))
