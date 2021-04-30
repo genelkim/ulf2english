@@ -32,7 +32,7 @@ The current version of the code has only been tested on SBCL.
 ## Running the Code
 This is really meant to be a library, but to check the basic functionality of any of the functions, you can load the file load.lisp and enter the package :ulf2english.  For example,
 ```
-$ acl
+$ sbcl
 $ (load "load.lisp")
 $ ...[loading messages]...
 $ (in-package :ulf2english)
