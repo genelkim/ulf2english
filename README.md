@@ -12,7 +12,7 @@ Maps ULFs to English sentences.
 - [ASDF version 3 or above](https://common-lisp.net/project/asdf/archives/asdf.lisp)
 - [TTT](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
-- [cl-util](https://github.com/genelkim/cl-util)
+- [gute](https://github.com/genelkim/gute)
 - [pattern](https://github.com/clips/pattern), If using Python 3, install with `pip install pattern`. If using Python 2, install with `script/install-pattern-en.sh`
 - cl-strings (loaded automatically via quicklisp)
 - lisp-unit (loaded automatically via quicklisp)
