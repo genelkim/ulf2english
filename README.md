@@ -98,8 +98,7 @@ Unit Test Summary
 Alternatively, run all the default tests by loading `runtest.lisp`.
 
 ```
-> sbcl
-* (load "runtest.lisp")
+> sbcl --load runtest.lisp
 ...[loading messages]...
 BWQA-GK1: 1 assertions passed, 0 failed.
 
@@ -117,9 +116,6 @@ Unit Test Summary
  | 33 failed
  | 0 execution errors
  | 0 missing tests
-
-T
-*
 ```
 
 ## After making changes
