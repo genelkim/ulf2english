@@ -66,7 +66,7 @@
                 (ulf (second x))
                 generated variants)
             (setf generated (funcall strclean (ulf2english ulf)))
-            (setf variants (gute:contraction-possibilities generated))
+            (setf variants (contraction-possibilities generated))
             (assert-true (member expected variants :test #'equal)
                          generated ulf)))
       sent-ulf-pairs)))
@@ -110,7 +110,7 @@
                 (ulf (second x))
                 generated variants)
             (setf generated (funcall strclean (ulf2english ulf)))
-            (setf variants (gute:contraction-possibilities generated))
+            (setf variants (contraction-possibilities generated))
             (assert-true (member expected variants :test #'equal)
                          generated ulf)))
       sent-ulf-pairs)))
@@ -136,7 +136,7 @@
             (setf generated (funcall strclean (ulf2english ulf
                                                            :add-punct? nil
                                                            :capitalize-front? nil)))
-            (setf variants (gute:contraction-possibilities generated))
+            (setf variants (contraction-possibilities generated))
             (assert-true (member expected variants :test #'equal)
                          generated ulf)))
       sent-ulf-pairs)))

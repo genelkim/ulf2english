@@ -13,8 +13,8 @@
 ;; If not a name replace dash and underscores with spaces.
 ;; Otherwise, the string is made lowercase.
 (defun post-format-ulf-string (s)
-  (let ((sstr (if (symbolp s) (gute:sym2str s) s)))
-    (gute:trim
+  (let ((sstr (if (symbolp s) (sym2str s) s)))
+    (trim
       (if (ulf:is-strict-name? sstr)
         (coerce (subseq (coerce sstr 'list) 1 (1- (length sstr)))
                 'string)
@@ -183,10 +183,10 @@
 ;   if it ends in 'e', append 'd'
 ;   otherwise, append 'ed'
   (if (atom word)
-    (let ((letters (gute:split-into-atoms word)))
+    (let ((letters (split-into-atoms word)))
       (if (member (car (last letters)) '(#\e #\E))
-        (gute:fuse-into-atom (append letters '(#\D)))
-        (gute:fuse-into-atom (append letters '(#\E #\D)))))
+        (fuse-into-atom (append letters '(#\D)))
+        (fuse-into-atom (append letters '(#\E #\D)))))
     ;; Just return since it's not an atom.
     word))
 
@@ -626,9 +626,9 @@
 (defun unrel-noun! (ulf)
   (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
     (let ((pkg (symbol-package ulf))
-          (wchars (gute:split-into-atoms word))
-          (tchars (gute:split-into-atoms suffix)))
-      (gute:fuse-into-atom
+          (wchars (split-into-atoms word))
+          (tchars (split-into-atoms suffix)))
+      (fuse-into-atom
         (append (reverse (nthcdr 3 (reverse wchars)))
                 '(\.)
                 tchars)
@@ -842,7 +842,7 @@
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
     (list #'(lambda (x) (remove-if-not #'surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'(lambda (x) (mapcar #'(lambda (y) (gute:atom2str y)) x))
+    (list #'(lambda (x) (mapcar #'(lambda (y) (atom2str y)) x))
           "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
@@ -859,7 +859,7 @@
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
   ;; "or", "to".
-  (gute:in-intern (inulf ulf :ulf2english)
+  (in-intern (inulf ulf :ulf2english)
     (let* ((idfn #'(lambda (x) x))
            (punct (extract-punctuation ulf))
            (add-punct-fn (add-punct-curried punct))

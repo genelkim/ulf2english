@@ -10,7 +10,7 @@
 (defvar *python-call-methods* '(socket shell py4cl))
 
 (defun ulf2pen-tense (tense)
-  (case (gute:safe-intern tense :ulf2english)
+  (case (safe-intern tense :ulf2english)
     (pres 'present)
     (past 'past)
     (cf 'past)
@@ -52,7 +52,7 @@
         ;; The post-process the request output by decoding into a string followed
         ;; by json, then extracting the result.
         (post-proc-fn
-          (gute:compose
+          (compose
             #'(lambda (x) (cdr (assoc :result x)))
             #'json:decode-json-from-string
             #'flexi-streams:octets-to-string))
