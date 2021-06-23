@@ -23,28 +23,6 @@
           "_" " ")))))
 
 
-;; TODO: probably put a version of this in ulf-lib.
-;; Returns t if 'token' is an atomic ULF element that has a corresponding token
-;; in the surface string and return nil otherwise.  e.g.,
-;;   man.n -> t
-;;   that -> t
-;;   tht -> nil
-;;   k -> nil
-;;   to -> t
-;;   perf -> t
-;;   {man}.n -> nil
-;;   2 -> t
-;;   "a" -> t
-(defun is-surface-token? (token+)
-  (let ((token (util:safe-intern token+ :ulf2english)))
-    (or (not (symbolp token))
-        (and (ulf:has-suffix? token)
-             (not (ulf:lex-elided? token))
-             (not (ulf:lex-hole-variable? token)))
-        (ulf:is-strict-name? token)
-        (member token '(that not and or to most some all every whether if)))))
-
-
 (defun set-of-to-and (ulf)
   (unhide-ttt-ops
     (ttt:apply-rule
@@ -187,7 +165,7 @@
               'would)
              ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
              ((and (eql word 'leave) (eql tense 'past)) 'left)
-             ((not (is-surface-token? verb)) word) ; {be}.v -> {be}.v
+             ((not (surface-token? verb)) word) ; {be}.v -> {be}.v
              (t (safe-intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
                              pkg)))
            (case suffix 
@@ -487,7 +465,7 @@
                'would)
               ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
               ((and (eql word 'leave) (eql tense 'past)) 'left)
-              ((not (is-surface-token? lex-verb)) word) ; {be}.v -> {be}.v
+              ((not (surface-token? lex-verb)) word) ; {be}.v -> {be}.v
               (t
                 (safe-intern
                   (if tense
@@ -862,7 +840,7 @@
     (list #'insert-commas! "Insert commas")
     (list #'quotes2surface! "Handle quotes")
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
-    (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
+    (list #'(lambda (x) (remove-if-not #'surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
     (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
           "Stringify symbols")
