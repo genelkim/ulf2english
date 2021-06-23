@@ -29,13 +29,13 @@
   "Comma insertions for nominal coordinators"
   (:tag :commas :noun-coord)
   (let (ulf expected predicted)
-    (setf ulf (i.pro ((past buy.v) ((the.d (plur book.n)) (k (plur apple.n)) and.cc (some.d sugar.n)))))
-    (setf expected "I bought the books, apples, and some sugar")
+    (setf ulf '(i.pro ((past buy.v) ((the.d (plur book.n)) (k (plur apple.n)) and.cc (some.d sugar.n)))))
+    (setf expected "I bought the books, apples, and some sugar.")
     (setf predicted (ulf2english ulf :add-commas t))
     (assert-equal expected predicted
                   expected predicted ulf)
-    (setf ulf (they.pro ((pres prog) (look.v (for.p-arg (you.pro and.cc me.pro))))))
-    (setf expected "They are looking for you and me")
+    (setf ulf '(they.pro ((pres prog) (look.v (for.p-arg (you.pro and.cc me.pro))))))
+    (setf expected "They are looking for you and me.")
     (setf predicted (ulf2english ulf :add-commas t))
     (assert-equal expected predicted
                   expected predicted ulf)))
