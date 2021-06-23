@@ -22,7 +22,6 @@
     (assert-equal expected (ulf2english ulf)
                   expected (ulf2english ulf) ulf)))
 
-;; TODO: clean this up by using lists of pairs....
 (define-test participles-from-doc
   "Proper handling of participles (examples from documentation on predicate modification)"
   (:tag :bugfixes :participle)

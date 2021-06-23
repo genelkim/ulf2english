@@ -34,8 +34,6 @@
 ;``````````````````````
 ; Converts the given ULF noun phrase to the plural version of the surface form.
 ; For complex noun phrases, this amounts to pluralizing the head of the noun phrase.
-    ;; TODO: handle pluralization of relational nouns [child-of.n -> children-of.n, not
-    ;;                                                 child-of.n -> child-ofs.n]
   (cond
     ((null ulf) nil)
     ((and (atom ulf) (ulf:lex-elided? ulf)) ulf)
@@ -156,7 +154,7 @@
        (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
          (ulf:add-suffix
            (cond
-             ((eql word 'were) 'were) ; TODO: this is repeated from conjugate-vp-head!, factorize into a seaprate function.  add a separate function conjugate-tensed-lex-verb...
+             ((eql word 'were) 'were)
              ((eql word 'would) 'would)
              ((eql word 'could) 'could)
              ((eql word 'should) 'should)
@@ -200,7 +198,6 @@
 ;   (pasv hit.v) -> (be.v hit.v)
 ;   (pasv confuse.v) -> (be.v confused.v)
 ;   (pres (pasv confuse.v)) -> ((pres be.v) confused.v)
-;   TODO: get the inherited tense
   (cond
     ((or (not (listp ulf)) (not (= (length ulf) 2))) ulf)
     ((and (eq 'pasv (first ulf)) (verb? (second ulf)))
@@ -226,8 +223,6 @@
 ; The parameter 'force' forces the participle generation even if this word is
 ; not in infinitive form. This parameter ensures that words that are already in
 ; participle form aren't accidentally re-processed.
-   ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
-   ;; with "ppart".
   (assert (member part-type '(PRESENT PAST)))
   (cond
     ((and (symbolp verb) (verb? verb)
@@ -451,10 +446,6 @@
           conjugated
           (add-suffix
             (cond
-              ;; TODO: figure out a way to generate 'was' and 'were' alternatives for
-              ;; (cf be.v). This needs to be integrated in general to the ulf2english
-              ;; function so we can add these alternatives at multiple points in the
-              ;; pipeline.
               ;; Special cases that don't need conjugation.
               ((eql word 'were) 'were)
               ((eql word 'would) 'would)
@@ -472,7 +463,7 @@
                     (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num :person pers)
                     (pattern-en-conjugate (string word) :number num :person pers))
                   pkg)))
-            ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
+            ; NB: special suffix so we don't recurse...
             'vp-head :pkg pkg))))
     (ulf:replace-vp-head vp conjugated :callpkg :ulf2english)))
 
@@ -674,12 +665,9 @@
      (extract-punctuation (second ulf)))
     ((and (listp ulf) (= (length ulf) 2) (member (cadr ulf) '(? !)))
      (string (cadr ulf)))
-    ;; TODO: tag questions...
     ((and (listp ulf) (= (length ulf) 2) (eq (cadr ulf) '.?))
      (string "?"))
     (t ".")))
-
-;; TODO: poss-by (see example (h) on page 34 of the guidelines)
 
 (defvar *post-processed-equivalencies*
   '(;; Prepositional wh-relative clauses
@@ -773,9 +761,6 @@
 ;; There seems to be a TTT bug that is causing the corresponding TTT rule to not
 ;; match.
 (defun comma-needing-large-coord? (ulf)
-  ;; TODO(gene): add handling for sentential cases...
-  ;;             this is a bit tricky because the morphological insertions makes the basic ULF type predicates
-  ;;             from ulf-lib to fail.
   (and (listp ulf)
        (> (length ulf) 3)
        (lex-coord? (nth (- (length ulf) 2) ulf))
@@ -810,8 +795,6 @@
     (/ (_!1 (* ~ \,) ((!2 lex-ps?) _!3))
        (_!1 * \, (!2 _!3)))
     ;; interleaved ps
-    ;; TODO(gene): maybe implement a version that doesn't require bracketing
-    ;; flatness, but just whether there are symbols following it.
     (/ (_!1 (* ~ \,) ((!2 lex-ps?) _!3) _+4)
        (_!1 * \, (!2 _!3) \, _+4))
     ;; coordinaton
@@ -829,7 +812,7 @@
 
 
 (defparameter *ulf2english-stages*
-  (list ;; TODO: generalize this function to adding types to all the hole variables.
+  (list
     (list #'set-of-to-and "Set-of to and.cc")
     (list #'(lambda (x) (ulf:add-info-to-sub-vars x :calling-package :ulf2english))
           "Add type/plurality info to 'sub' variables")
@@ -854,8 +837,6 @@
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
 (defun ulf2english (inulf &key (add-punct? t) (capitalize-front? t) (add-commas nil))
-  ;; TODO: make more sophisticated version (quotes, ds, etc.).
-
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
   ;; "or", "to".

@@ -19,7 +19,6 @@ import base64
 import code
 
 key = ""
-# TODO: make it so we can have multiple connections with unique local variables.
 local = {"__name__": "__console__", "__doc__": None}
 
 """
@@ -28,7 +27,6 @@ Allows HEAD, OPTIONS, and POSTS.  The server authenticates the user to limit
 unwanted traffic and allows cross-origin requests of all sorts since this
 server is designed to be called by another backend.
 """
-# TODO: set cross-origin to only be allowed from cs.rochester
 class S(BaseHTTPRequestHandler):
 
   # Set options that allow cross-origin requests.
@@ -87,7 +85,6 @@ class S(BaseHTTPRequestHandler):
       print "Command: {}".format(cmd)
       print "Expression: {}".format(exp)
       result = None
-      # TODO: limit the scope of exec and eval so we can't fuck up our file system.
       if cmd == 'exec':
         exec(exp, local)
       else:

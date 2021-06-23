@@ -25,23 +25,20 @@
     (assert-equal expected predicted
                   expected predicted ulf)))
 
-; TODO(gene): think of actual examples.
-;(define-test noun-coord
-;  "Comma insertions for nominal coordinators"
-;  (:tag :commas :noun-coord)
-;  (let (ulf expected predicted)
-;    ;; The 
-;    (setf ulf ((i.pro (past leave.v)) and.cc ((the.d tower.n) (past fall.v))))
-;    (setf expected "I left, and the tower fell")
-;    (setf predicted (ulf2english ulf :add-commas t))
-;    (assert-equal expected predicted
-;                  expected predicted ulf)
-;    ;; I 
-;    (setf ulf ((i.pro (past leave.v)) (he.pro ((past turn.v) around.adv-a)) and.cc ((the.d tower.n) (past fall.v))))
-;    (setf expected "I left, he turned around, and the tower fell")
-;    (setf predicted (ulf2english ulf :add-commas t))
-;    (assert-equal expected predicted
-;                  expected predicted ulf)))
+(define-test noun-coord
+  "Comma insertions for nominal coordinators"
+  (:tag :commas :noun-coord)
+  (let (ulf expected predicted)
+    (setf ulf (i.pro ((past buy.v) ((the.d (plur book.n)) (k (plur apple.n)) and.cc (some.d sugar.n)))))
+    (setf expected "I bought the books, apples, and some sugar")
+    (setf predicted (ulf2english ulf :add-commas t))
+    (assert-equal expected predicted
+                  expected predicted ulf)
+    (setf ulf (they.pro ((pres prog) (look.v (for.p-arg (you.pro and.cc me.pro))))))
+    (setf expected "They are looking for you and me")
+    (setf predicted (ulf2english ulf :add-commas t))
+    (assert-equal expected predicted
+                  expected predicted ulf)))
     
 (define-test verb-coord
   "Comma insertions for verbal coordinators"

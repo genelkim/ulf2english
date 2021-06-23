@@ -124,7 +124,6 @@
   "Does the SRI block have anything on it?"
   '(((pres do.aux-s) (the.d (| SRI| block.n))
      (have.v anything.pro (on.p it.pro))) ?))
-    ;; TODO: update the formula below once we finalize how to deal with this "blocks"
 (gen-ext-pkg-test extpkg-gk14
   (:gene-extpkg)
   "Are the Nvidia and the SRI blocks in the same stack?"
@@ -140,8 +139,6 @@
   "Is the Starbucks block on top of any row?"
   '(((pres be.v) (the.d (| Starbucks| block.n))
      (on.p ({the}.d (top-of.n (any.d row.n))))) ?))
-    ;; TODO: the formula below doesn't seem right since two separate 'plur'
-    ;; operators seems to preclude having one Nvidia and one McDonalds block
 (gen-ext-pkg-test extpkg-gk17
   (:gene-extpkg)
   "Are the Nvidia and the McDonalds blocks side by side?"
@@ -177,7 +174,6 @@
      (slightly.mod-a
       (to.p (the.d (left-of.n (some.d (red.a block.n))))))) ?))
 (gen-ext-pkg-test extpkg-gk22
-    ;; TODO: update the formula below once we finalize how to deal with this "blocks"
   (:gene-extpkg)
   "Is there a block between the McDonalds and the SRI blocks?"
   '(((pres be.v) there.pro
