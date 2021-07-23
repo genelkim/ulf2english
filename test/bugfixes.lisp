@@ -279,3 +279,10 @@
     "All cats have tails."
     (ulf2english '((ALL.D (PLUR CAT.N)) ((PRES HAVE.V) (K (PLUR TAIL.N)))))))
 
+(define-test decimals
+  "Preserve decimals numbers, that is don't treat them as suffixes."
+  (:tag :bugfixes :decimals)
+  (assert-equal
+    "The distance is 1.5."
+    (ulf2english '((the.d distance.n) ((pres be.v) (= 1.5))))))
+
