@@ -23,6 +23,12 @@
           "_" " ")))))
 
 
+(defun set-of-to-and (ulf)
+  (unhide-ttt-ops
+    (ttt:apply-rule
+      '(/ (set-of _+ _!) (_+ and.cc _!))
+      (hide-ttt-ops ulf))))
+
 
 (defun pluralize! (ulf)
 ;``````````````````````
