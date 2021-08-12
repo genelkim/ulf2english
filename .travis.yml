@@ -40,13 +40,14 @@ install:
   # Install lisp environment.
   #
   # Install roswell
-  - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh;
+  #- curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh;
+  - curl -L https://raw.githubusercontent.com/genelkim/custom-ci-scripts/master/install-for-ci-sbcl-2.0.7.sh | sh;
   # Install non-quicklisp dependencies
   - ros install genelkim/ttt
   - ros install genelkim/cl-util
   - ros install genelkim/ulf-lib
-  # Install trivial-mimes from github because of a critical bugfix since last quicklisp update.
-  - ros install Shinmera/trivial-mimes
+  # Temporary fix, remove this once the fix has been propagated to Quicklisp
+  - ros install genelkim/py4cl2/v0.1-temp
   # Make current project accessible by roswell
   - ln -s $(pwd) ~/.roswell/local-projects/ulf2english
 
@@ -77,10 +78,10 @@ install:
       pip install pattern;
     fi
 
-cache:
-  directories:
-    # Cache roswell
-    - $HOME/.roswell
+#cache:
+#  directories:
+#    # Cache roswell
+#    - $HOME/.roswell
 
 script:
   - if [[ "$LISP" == "sbcl" ]]; then

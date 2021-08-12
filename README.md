@@ -12,7 +12,7 @@ Maps ULFs to English sentences.
 - [ASDF version 3 or above](https://common-lisp.net/project/asdf/archives/asdf.lisp)
 - [TTT](https://github.com/genelkim/ttt)
 - [ulf-lib](https://github.com/genelkim/ulf-lib)
-- [cl-util](https://github.com/genelkim/cl-util)
+- [gute](https://github.com/genelkim/gute)
 - [pattern](https://github.com/clips/pattern), If using Python 3, install with `pip install pattern`. If using Python 2, install with `script/install-pattern-en.sh`
 - cl-strings (loaded automatically via quicklisp)
 - lisp-unit (loaded automatically via quicklisp)
@@ -25,15 +25,15 @@ The current version of the code has only been tested on SBCL.
 ## Installation
 1. Install quicklisp by following instructions at https://www.quicklisp.org/beta/
 2. Download the latest [asdf.lisp](https://common-lisp.net/project/asdf/#downloads) file and include it in your lisp start-up script (e.g. `.sbclrc`). I recommend also overwriting `quicklisp/asdf.lisp` to eliminate the possibility of accidentally loading the out-of-date copy of `asdf.lisp` that comes with Quicklisp be default.
-3. Then place the other depenedencies listed above in a folder accessible to Quicklisp or ASDF (which underlies quicklisp).  How to do this in a couple ways is described by the following Stack Overflow answer https://stackoverflow.com/a/11265601.
+3. Then place the other depenedencies listed above in a folder accessible to Quicklisp or ASDF (which underlies quicklisp). How to do this in a couple ways is described by the following Stack Overflow answer https://stackoverflow.com/a/11265601.
 4. If you need a Python virtual environment, get [virtualenv](https://virtualenv.pypa.io/en/latest/#) (`cs.rochester.edu` already has it) and start a virtual environment. I also recommend [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) for better management of virtual environments. Alternatively, you can use [Anaconda](https://www.anaconda.com/products/individual).
 5. Run `script/install-pattern-en.sh` and check that it didn't fail (NB: the version we install requires Python 2). For Python 3 use `pip install pattern`.
 
 ## Running the Code
-This is really meant to be a library, but to check the basic functionality of any of the functions, you can load the file load.lisp and enter the package :ulf2english.  For example,
+This is really meant to be a library, but to check the basic functionality of any of the functions you can enter the package :ulf2english. For example,
 ```
-$ acl
-$ (load "load.lisp")
+$ sbcl
+$ (ql:quickload :ulf2english)
 $ ...[loading messages]...
 $ (in-package :ulf2english)
 $ (ulf2english '(This.pro ((pres be.v) (= (a.d sentence.n)))))
@@ -46,14 +46,14 @@ By default, ulf2english uses `py4cl` to interface with pattern.en, but if you ch
 ```
 python python-repl-server.py 8080 "g:g"
 ```
-This will start the server on localhost, port 8080 with authentication "g:g" (which is the default in the code). You can change the port, username, and password that ulf2english uses through parameters (`*python-server-url*`,`*python-server-username*`, `*python-server-password*`)  defined in `pattern-en.lisp`.
+This will start the server on localhost, port 8080 with authentication "g:g" (which is the default in the code). You can change the port, username, and password that ulf2english uses through parameters (`*python-server-url*`,`*python-server-username*`, `*python-server-password*`) defined in `pattern-en.lisp`.
 
 ## Running Tests
-The following steps are for running the blocks world question answering unit tests.  You can substitute the file and entered package to select the appropriate tests.
+The following steps are for running the blocks world question answering unit tests. You can substitute the file and entered package to select the appropriate tests.
 
 ```
 > sbcl
-* (load "load.lisp")
+* (ql:quickload :ulf2english)
 ...[loading messages]...
 * (load "test/blocks-world-qa.lisp")
 ...[loading messages]...
@@ -98,8 +98,7 @@ Unit Test Summary
 Alternatively, run all the default tests by loading `runtest.lisp`.
 
 ```
-> sbcl
-* (load "runtest.lisp")
+> sbcl --load runtest.lisp
 ...[loading messages]...
 BWQA-GK1: 1 assertions passed, 0 failed.
 
@@ -117,9 +116,6 @@ Unit Test Summary
  | 33 failed
  | 0 execution errors
  | 0 missing tests
-
-T
-*
 ```
 
 ## After making changes

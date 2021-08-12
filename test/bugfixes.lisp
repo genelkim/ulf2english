@@ -22,7 +22,6 @@
     (assert-equal expected (ulf2english ulf)
                   expected (ulf2english ulf) ulf)))
 
-;; TODO: clean this up by using lists of pairs....
 (define-test participles-from-doc
   "Proper handling of participles (examples from documentation on predicate modification)"
   (:tag :bugfixes :participle)
@@ -272,4 +271,25 @@
     "The Twitter block should be clear."
     (ulf2english '((the.d (|Twitter| block.n))
                    ((pres should.aux-s) (be.v clear.a))))))
+
+(define-test tails
+  "Missing plural"
+  (:tag :bugfixes :plur)
+  (assert-equal
+    "All cats have tails."
+    (ulf2english '((ALL.D (PLUR CAT.N)) ((PRES HAVE.V) (K (PLUR TAIL.N)))))))
+
+(define-test decimals
+  "Preserve decimals numbers, that is don't treat them as suffixes."
+  (:tag :bugfixes :decimals)
+  (assert-equal
+    "The distance is 1.5."
+    (ulf2english '((the.d distance.n) ((pres be.v) (= 1.5))))))
+
+(define-test number-subjects
+  "Handle numbers being subjects of sentences."
+  (:tag :bugfixes :number-subject)
+  (assert-equal
+    "5 is a number."
+    (ulf2english '(5 ((pres be.v) (= (a.d number.n)))))))
 

@@ -44,7 +44,6 @@
         (ulf:is-strict-name? token)
         (member token '(that not and or to most some all every whether if)))))
 
-
 (defun set-of-to-and (ulf)
   (unhide-ttt-ops
     (ttt:apply-rule
@@ -56,8 +55,6 @@
 ;``````````````````````
 ; Converts the given ULF noun phrase to the plural version of the surface form.
 ; For complex noun phrases, this amounts to pluralizing the head of the noun phrase.
-    ;; TODO: handle pluralization of relational nouns [child-of.n -> children-of.n, not
-    ;;                                                 child-of.n -> child-ofs.n]
   (cond
     ((null ulf) nil)
     ((and (atom ulf) (ulf:lex-elided? ulf)) ulf)
@@ -79,7 +76,7 @@
     (t
       (let* ((hn (find-np-head ulf :callpkg :ulf2english))
              (plurhn (pluralize! hn)))
-        (replace-np-head ulf plurhn)))))
+        (replace-np-head ulf plurhn :callpkg :ulf2english)))))
 
 
 
@@ -141,11 +138,13 @@
 ; Converts the given adjective phrase and converts it to superlative form.
 ; This amounts to finding the head adjective and making it superlative most of
 ; the time.  If the head isn't found, we just wrap 'most' around the whole thing.
-  (multiple-value-bind (ha found _1) (ulf:search-ap-head apulf)
+  (multiple-value-bind (ha found _1) (ulf:search-ap-head apulf :callpkg :ulf2english)
     (declare (ignore _1))
     (cond
       (found
-        (multiple-value-bind (_2 _3 newap) (ulf:search-ap-head apulf :sub (lex-superlative! ha))
+        (multiple-value-bind (_2 _3 newap) (ulf:search-ap-head apulf
+                                                               :sub (lex-superlative! ha)
+                                                               :callpkg :ulf2english)
           (declare (ignore _2))
           (declare (ignore _3))
           newap))
@@ -162,8 +161,8 @@
 ; (tense ulf).  Otherwise, it just returns the ulf.
 ;
 ; e.g.
-;   (past run.v) -> ran.v
-;   (pres sleep.v) -> sleep.v
+;   (past run.v) -> ran.vp-head
+;   (pres sleep.v) -> sleep.vp-head
   (cond
     ;; Simple case where there's tense and a simple verb.
     ((and (= 2 (length ulf))
@@ -176,7 +175,7 @@
        (multiple-value-bind (word suffix) (ulf:split-by-suffix verb)
          (ulf:add-suffix
            (cond
-             ((eql word 'were) 'were) ; TODO: this is repeated from conjugate-vp-head!, factorize into a seaprate function.  add a separate function conjugate-tensed-lex-verb...
+             ((eql word 'were) 'were)
              ((eql word 'would) 'would)
              ((eql word 'could) 'could)
              ((eql word 'should) 'should)
@@ -185,10 +184,13 @@
               'would)
              ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
              ((and (eql word 'leave) (eql tense 'past)) 'left)
-             ((not (is-surface-token? verb)) word) ; {be}.v -> {be}.v
+             ((not (surface-token? verb)) word) ; {be}.v -> {be}.v
              (t (safe-intern (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense))
                              pkg)))
-           suffix :pkg pkg))))
+           (case suffix 
+             (v 'vp-head)
+             (otherwise suffix))
+           :pkg pkg))))
     ;; Ignore all other cases for now.
     (t ulf)))
 
@@ -217,7 +219,6 @@
 ;   (pasv hit.v) -> (be.v hit.v)
 ;   (pasv confuse.v) -> (be.v confused.v)
 ;   (pres (pasv confuse.v)) -> ((pres be.v) confused.v)
-;   TODO: get the inherited tense
   (cond
     ((or (not (listp ulf)) (not (= (length ulf) 2))) ulf)
     ((and (eq 'pasv (first ulf)) (verb? (second ulf)))
@@ -243,8 +244,6 @@
 ; The parameter 'force' forces the participle generation even if this word is
 ; not in infinitive form. This parameter ensures that words that are already in
 ; participle form aren't accidentally re-processed.
-   ;; TODO: enable aliases and tags in pattern-en-conjugate so we can do this
-   ;; with "ppart".
   (assert (member part-type '(PRESENT PAST)))
   (cond
     ((and (symbolp verb) (verb? verb)
@@ -292,7 +291,7 @@
   (assert (member part-type '(PRESENT PAST nil)))
   (cond
     ((verb? vp)
-     (let* ((head-verb (ulf:find-vp-head vp))
+     (let* ((head-verb (ulf:find-vp-head vp :callpkg :ulf2english))
             (participle
               (cond
                 ;; Present participle condition.
@@ -313,7 +312,7 @@
                  (verb-to-past-participle! (second head-verb)))
                 (t (error "verb ~s is not a form that can become a past participle"
                           head-verb)))))
-       (ulf:replace-vp-head vp participle)))
+       (ulf:replace-vp-head vp participle :callpkg :ulf2english)))
     ;; If it isn't a verb phrase, just return.
     (t vp)))
 
@@ -451,7 +450,7 @@
               vp)))
   (let* ((num (if (plur-term? subj) 'PL 'SG))
          (pers (subj2person! subj))
-         (hv (ulf:find-vp-head vp))
+         (hv (ulf:find-vp-head vp :callpkg :ulf2english))
          (tense (if (or (tensed-verb? hv) (tensed-aux? hv)) (first hv) nil))
          (lex-verb (if tense (second hv) hv))
          conjugated pkg)
@@ -468,10 +467,6 @@
           conjugated
           (add-suffix
             (cond
-              ;; TODO: figure out a way to generate 'was' and 'were' alternatives for
-              ;; (cf be.v). This needs to be integrated in general to the ulf2english
-              ;; function so we can add these alternatives at multiple points in the
-              ;; pipeline.
               ;; Special cases that don't need conjugation.
               ((eql word 'were) 'were)
               ((eql word 'would) 'would)
@@ -482,16 +477,16 @@
                'would)
               ((and (eql word 'forsee) (eql tense 'past)) 'forsaw)
               ((and (eql word 'leave) (eql tense 'past)) 'left)
-              ((not (is-surface-token? lex-verb)) word) ; {be}.v -> {be}.v
+              ((not (surface-token? lex-verb)) word) ; {be}.v -> {be}.v
               (t
                 (safe-intern
                   (if tense
                     (pattern-en-conjugate (string word) :tense (ulf2pen-tense tense) :number num :person pers)
                     (pattern-en-conjugate (string word) :number num :person pers))
                   pkg)))
-            ; NB: special suffix so we don't recurse... TODO: rename as somthing more descriptive (e.g. conjugatedv)
+            ; NB: special suffix so we don't recurse...
             'vp-head :pkg pkg))))
-    (ulf:replace-vp-head vp conjugated)))
+    (ulf:replace-vp-head vp conjugated :callpkg :ulf2english)))
 
 (defun vp-head? (x)
   "Checks whether the given argument is a vp-head type. This type is not part
@@ -504,14 +499,14 @@
   "Adverbializes the head adjective of an adjective phrase.
   The adjective type is retained to preserve any future type
   computation."
-  (let ((ha (ulf:find-ap-head ap))
+  (let ((ha (ulf:find-ap-head ap :callpkg :ulf2english))
         wordstr advdstr advd pkg)
     (setf pkg (symbol-package ha))
     (multiple-value-bind (word suffix) (split-by-suffix ha)
       (setf wordstr (cl-strings:replace-all (sym2str word) "_" " "))
       (setf advdstr (cl-strings:replace-all (adj2adv wordstr) " " "_"))
       (setf advd (add-suffix (intern advdstr) suffix :pkg pkg)))
-    (ulf:replace-ap-head ap advd)))
+    (ulf:replace-ap-head ap advd :callpkg :ulf2english)))
 
 (defparameter *participle-for-post-modifying-verbs*
 ;`````````````````````````````````````````````
@@ -612,8 +607,7 @@
         *exist-there-tense-n-number2surface*
         *inv-exist-there-tense-n-number2surface*
         ;*inv-simple-sub-tense-n-number2surface*
-        ; NB: comment below when testing tense-n-number2surface, but uncomment during use.
-        ;*tense2surface* ; default tense if above didn't work.
+        *tense2surface* ; default tense if above didn't work.
         *plur2surface*
         *most-n-morph*
         *most-morph*)
@@ -692,12 +686,9 @@
      (extract-punctuation (second ulf)))
     ((and (listp ulf) (= (length ulf) 2) (member (cadr ulf) '(? !)))
      (string (cadr ulf)))
-    ;; TODO: tag questions...
     ((and (listp ulf) (= (length ulf) 2) (eq (cadr ulf) '.?))
      (string "?"))
     (t ".")))
-
-;; TODO: poss-by (see example (h) on page 34 of the guidelines)
 
 (defvar *post-processed-equivalencies*
   '(;; Prepositional wh-relative clauses
@@ -791,9 +782,6 @@
 ;; There seems to be a TTT bug that is causing the corresponding TTT rule to not
 ;; match.
 (defun comma-needing-large-coord? (ulf)
-  ;; TODO(gene): add handling for sentential cases...
-  ;;             this is a bit tricky because the morphological insertions makes the basic ULF type predicates
-  ;;             from ulf-lib to fail.
   (and (listp ulf)
        (> (length ulf) 3)
        (lex-coord? (nth (- (length ulf) 2) ulf))
@@ -828,8 +816,6 @@
     (/ (_!1 (* ~ \,) ((!2 lex-ps?) _!3))
        (_!1 * \, (!2 _!3)))
     ;; interleaved ps
-    ;; TODO(gene): maybe implement a version that doesn't require bracketing
-    ;; flatness, but just whether there are symbols following it.
     (/ (_!1 (* ~ \,) ((!2 lex-ps?) _!3) _+4)
        (_!1 * \, (!2 _!3) \, _+4))
     ;; coordinaton
@@ -847,7 +833,7 @@
 
 
 (defparameter *ulf2english-stages*
-  (list ;; TODO: generalize this function to adding types to all the hole variables.
+  (list
     (list #'set-of-to-and "Set-of to and.cc")
     (list #'(lambda (x) (ulf:add-info-to-sub-vars x :calling-package :ulf2english))
           "Add type/plurality info to 'sub' variables")
@@ -858,7 +844,7 @@
     (list #'insert-commas! "Insert commas")
     (list #'quotes2surface! "Handle quotes")
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
-    (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
+    (list #'(lambda (x) (remove-if-not #'surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
     (list #'(lambda (x) (mapcar #'(lambda (y) (atom2str y)) x))
           "Stringify symbols")
@@ -872,8 +858,6 @@
 ;; Maps a ULF formula to a corresponding surface string.
 ;; NB: currently this is incomplete and not fluent.
 (defun ulf2english (inulf &key (add-punct? t) (capitalize-front? t) (add-commas nil))
-  ;; TODO: make more sophisticated version (quotes, ds, etc.).
-
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
   ;; "or", "to".
