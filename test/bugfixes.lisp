@@ -286,3 +286,10 @@
     "The distance is 1.5."
     (ulf2english '((the.d distance.n) ((pres be.v) (= 1.5))))))
 
+(define-test number-subjects
+  "Handle numbers being subjects of sentences."
+  (:tag :bugfixes :number-subject)
+  (assert-equal
+    "5 is a number."
+    (ulf2english '(5 ((pres be.v) (= (a.d number.n)))))))
+
