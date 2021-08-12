@@ -13,8 +13,8 @@
 ;; If not a name replace dash and underscores with spaces.
 ;; Otherwise, the string is made lowercase.
 (defun post-format-ulf-string (s)
-  (let ((sstr (if (symbolp s) (util:sym2str s) s)))
-    (util:trim
+  (let ((sstr (if (symbolp s) (sym2str s) s)))
+    (trim
       (if (ulf:is-strict-name? sstr)
         (coerce (subseq (coerce sstr 'list) 1 (1- (length sstr)))
                 'string)
@@ -36,7 +36,7 @@
 ;;   2 -> t
 ;;   "a" -> t
 (defun is-surface-token? (token+)
-  (let ((token (util:safe-intern token+ :ulf2english)))
+  (let ((token (safe-intern token+ :ulf2english)))
     (or (not (symbolp token))
         (and (ulf:has-suffix? token)
              (not (ulf:lex-elided? token))
@@ -46,10 +46,10 @@
 
 
 (defun set-of-to-and (ulf)
-  (util:unhide-ttt-ops
+  (unhide-ttt-ops
     (ttt:apply-rule
       '(/ (set-of _+ _!) (_+ and.cc _!))
-      (util:hide-ttt-ops ulf))))
+      (hide-ttt-ops ulf))))
 
 
 (defun pluralize! (ulf)
@@ -200,10 +200,10 @@
 ;   if it ends in 'e', append 'd'
 ;   otherwise, append 'ed'
   (if (atom word)
-    (let ((letters (util:split-into-atoms word)))
+    (let ((letters (split-into-atoms word)))
       (if (member (car (last letters)) '(#\e #\E))
-        (util:fuse-into-atom (append letters '(#\D)))
-        (util:fuse-into-atom (append letters '(#\E #\D)))))
+        (fuse-into-atom (append letters '(#\D)))
+        (fuse-into-atom (append letters '(#\E #\D)))))
     ;; Just return since it's not an atom.
     word))
 
@@ -581,7 +581,7 @@
 
 
 (defun add-morphology (ulf)
-  (util:unhide-ttt-ops
+  (unhide-ttt-ops
     (ttt:apply-rules
       (list
         ;; NB: THE ORDER HERE MATTERS
@@ -617,7 +617,7 @@
         *plur2surface*
         *most-n-morph*
         *most-morph*)
-      (util:hide-ttt-ops ulf) :max-n 1000
+      (hide-ttt-ops ulf) :max-n 1000
       :rule-order :slow-forward :rule-depth :deepest)))
 
 
@@ -644,9 +644,9 @@
 (defun unrel-noun! (ulf)
   (multiple-value-bind (word suffix) (ulf:split-by-suffix ulf)
     (let ((pkg (symbol-package ulf))
-          (wchars (util:split-into-atoms word))
-          (tchars (util:split-into-atoms suffix)))
-      (util:fuse-into-atom
+          (wchars (split-into-atoms word))
+          (tchars (split-into-atoms suffix)))
+      (fuse-into-atom
         (append (reverse (nthcdr 3 (reverse wchars)))
                 '(\.)
                 tchars)
@@ -658,10 +658,10 @@
 ;;   (on.p ({the}.d (top-of.n *ref)))
 ;;   -> (on.p ({the}.d top.n))
 (defun relational-nouns-to-surface (ulf)
-  (util:unhide-ttt-ops
+  (unhide-ttt-ops
     (ttt:apply-rules '((/ (lex-rel-noun? (! [*S] [*REF]))
                           (unrel-noun! lex-rel-noun?)))
-                     (util:hide-ttt-ops ulf) :max-n 500
+                     (hide-ttt-ops ulf) :max-n 500
                      :rule-order :slow-forward)))
 
 
@@ -841,8 +841,8 @@
     ;(/ (_!1 (* ~ \,) (!2 ~ \,) (!3 lex-coord?) (!4 ~ \,))
     ;   (add-comma-to-large-coord! (_!1 * !2 !3 !4)))))
 (defun insert-commas! (ulf)
-  (util:unhide-ttt-ops
-    (ttt:apply-rules *insert-comma-ttt* (util:hide-ttt-ops ulf) :max-n 1000
+  (unhide-ttt-ops
+    (ttt:apply-rules *insert-comma-ttt* (hide-ttt-ops ulf) :max-n 1000
                      :rule-order :slow-forward)))
 
 
@@ -860,7 +860,7 @@
     (list #'post-posses2surface! "Handle post-nominal possessive (i.e. 's)")
     (list #'(lambda (x) (remove-if-not #'is-surface-token? (alexandria:flatten x)))
      "Only retaining surface symbols")
-    (list #'(lambda (x) (mapcar #'(lambda (y) (util:atom2str y)) x))
+    (list #'(lambda (x) (mapcar #'(lambda (y) (atom2str y)) x))
           "Stringify symbols")
     (list #'(lambda (x) (mapcar #'ulf:strip-suffix x)) "Strip suffixes")
     (list #'(lambda (x) (mapcar #'post-format-ulf-string x)) "Post-format strings")
@@ -877,7 +877,7 @@
   ;; For now just drop all special operators and just take the suffixed tokens.
   ;; The only non-suffixed tokens that we preserve are "that", "not", "and",
   ;; "or", "to".
-  (util:in-intern (inulf ulf :ulf2english)
+  (in-intern (inulf ulf :ulf2english)
     (let* ((idfn #'(lambda (x) x))
            (punct (extract-punctuation ulf))
            (add-punct-fn (add-punct-curried punct))
