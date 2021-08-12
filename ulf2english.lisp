@@ -23,33 +23,6 @@
           "_" " ")))))
 
 
-;; TODO: probably put a version of this in ulf-lib.
-;; Returns t if 'token' is an atomic ULF element that has a corresponding token
-;; in the surface string and return nil otherwise.  e.g.,
-;;   man.n -> t
-;;   that -> t
-;;   tht -> nil
-;;   k -> nil
-;;   to -> t
-;;   perf -> t
-;;   {man}.n -> nil
-;;   2 -> t
-;;   "a" -> t
-(defun is-surface-token? (token+)
-  (let ((token (safe-intern token+ :ulf2english)))
-    (or (not (symbolp token))
-        (and (ulf:has-suffix? token)
-             (not (ulf:lex-elided? token))
-             (not (ulf:lex-hole-variable? token)))
-        (ulf:is-strict-name? token)
-        (member token '(that not and or to most some all every whether if)))))
-
-(defun set-of-to-and (ulf)
-  (unhide-ttt-ops
-    (ttt:apply-rule
-      '(/ (set-of _+ _!) (_+ and.cc _!))
-      (hide-ttt-ops ulf))))
-
 
 (defun pluralize! (ulf)
 ;``````````````````````
