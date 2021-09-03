@@ -8,6 +8,10 @@
 ;; Give cl-ppcre a nickname.
 (add-nickname "CL-PPCRE" "RE")
 
+;; A couple of high-cost or frequently called functions to memoize.
+(gute:memoize 'adj2adv)
+(gute:memoize 'gute:intern-symbols-recursive)
+
 ;; Post formats a ULF-to-string mapping.
 ;; If it is a name (e.g. |John|), the pipes are stripped off.
 ;; If not a name replace dash and underscores with spaces.
@@ -473,6 +477,7 @@
   processing to stop verb conjugation rules to be applied more than once in a
   verb phrase."
   (ulf::in-package-suffix-check x "VP-HEAD"))
+(gute:memoize 'vp-head?)
 
 (defun adverbialize-adj-head! (ap)
   "Adverbializes the head adjective of an adjective phrase.
