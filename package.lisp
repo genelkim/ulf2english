@@ -6,7 +6,5 @@
 (defpackage :ulf2english
   (:use :cl :ttt :cl-strings :cl-json :gute :ulf-lib :inferior-shell :lisp-unit :drakma :py4cl)
   (:shadow :insert)
-  (:shadowing-import-from :cl-ppcre)
-  (:shadowing-import-from :py4cl python-call python-method)
   (:export ulf2english))
 

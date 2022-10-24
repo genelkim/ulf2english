@@ -22,7 +22,7 @@
 ;;
 ;; At the moment this function assumes that the required arguments may be
 ;; strings, whereas keyed arguments are not.
-(defun python-call (fnname required-args keyed-args)
+(defun format-python-call (fnname required-args keyed-args)
   (let ((rarg-str (format nil "~{~s~^,~}" required-args))
         (karg-str (format nil "~{~a~^,~}"
                           (loop for (key . value) in keyed-args
@@ -156,7 +156,7 @@
                     (negated . ,negated)
                     (parse . ,parse)))
          ;; Construct the Python function call.
-         (python-call (python-call 'conjugate (list verb) arglist)))
+         (python-call (format-python-call 'conjugate (list verb) arglist)))
     ;; Since it's all the same case anyway, make it upper case so it doesn't force
     ;; a case sensitive symbol.
     (string-upcase
@@ -169,7 +169,7 @@
 (defun pattern-en-pluralize (noun &key (python-method 'py4cl)
                                        (preserve-case nil))
   (assert (member python-method *python-call-methods*))
-  (let* ((python-call (python-call 'pluralize (list noun) nil))
+  (let* ((python-call (format-python-call 'pluralize (list noun) nil))
          (rawout (make-pattern-en-call python-call python-method)))
     (if preserve-case rawout (string-upcase rawout))))
 
@@ -178,7 +178,7 @@
 (defun pattern-en-superlative (adj &key (python-method 'py4cl)
                                         (preserve-case nil))
   (assert (member python-method *python-call-methods*))
-  (let* ((python-call (python-call 'superlative (list adj) nil))
+  (let* ((python-call (format-python-call 'superlative (list adj) nil))
          (rawout (make-pattern-en-call python-call python-method)))
     (if preserve-case rawout (string-upcase rawout))))
 
@@ -187,7 +187,7 @@
 (defun pattern-en-comparative (adj &key (python-method 'py4cl)
                                         (preserve-case nil))
   (assert (member python-method *python-call-methods*))
-  (let* ((python-call (python-call 'comparative (list adj) nil))
+  (let* ((python-call (format-python-call 'comparative (list adj) nil))
          (rawout (make-pattern-en-call python-call python-method)))
     (if preserve-case rawout (string-upcase rawout))))
 
